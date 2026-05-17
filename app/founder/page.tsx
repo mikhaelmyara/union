@@ -35,6 +35,8 @@ export default function FounderPage() {
   const [loading, setLoading] = useState(true);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [email, setEmail] = useState("");
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [rewardAmount, setRewardAmount] = useState(0);
@@ -52,6 +54,8 @@ export default function FounderPage() {
       window.location.href = "/login";
       return;
     }
+
+    setEmail(user.email ?? "");
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -81,6 +85,11 @@ export default function FounderPage() {
     setLoading(false);
   }
 
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  }
+
   async function createCampaign() {
     const { error } = await supabase.from("campaigns").insert({
       title,
@@ -100,228 +109,342 @@ export default function FounderPage() {
   }
 
   async function toggleCampaign(campaignId: string, isActive: boolean) {
-    await supabase
+    const { error } = await supabase
       .from("campaigns")
       .update({ is_active: !isActive })
       .eq("id", campaignId);
 
-    loadDashboard();
+    if (error) {
+      alert(error.message);
+    } else {
+      loadDashboard();
+    }
   }
 
   async function updateStatus(
     leadId: string,
     status: "approved" | "rejected" | "pending"
   ) {
-    await supabase.from("leads").update({ status }).eq("id", leadId);
-    loadDashboard();
+    const { error } = await supabase
+      .from("leads")
+      .update({ status })
+      .eq("id", leadId);
+
+    if (error) {
+      alert(error.message);
+    } else {
+      loadDashboard();
+    }
   }
 
-  const approvedLeads = leads.filter(
-  (lead) => lead.status === "approved"
-).length;
-
-const pendingLeads = leads.filter(
-  (lead) => lead.status === "pending"
-).length;
-
-const rejectedLeads = leads.filter(
-  (lead) => lead.status === "rejected"
-).length;
-
-const chartData = [
-  {
-    name: "Pending",
-    value: pendingLeads,
-  },
-  {
-    name: "Approved",
-    value: approvedLeads,
-  },
-  {
-    name: "Rejected",
-    value: rejectedLeads,
-  },
-];
+  const pendingLeads = leads.filter((lead) => lead.status === "pending").length;
+  const approvedLeads = leads.filter((lead) => lead.status === "approved").length;
+  const rejectedLeads = leads.filter((lead) => lead.status === "rejected").length;
 
   const totalRewards = leads
     .filter((lead) => lead.status === "approved")
     .reduce((sum, lead) => sum + (lead.campaigns?.reward_amount ?? 0), 0);
 
+  const chartData = [
+    { name: "En attente", value: pendingLeads },
+    { name: "Approuvés", value: approvedLeads },
+    { name: "Refusés", value: rejectedLeads },
+  ];
+
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-50">
+      <main className="flex min-h-screen items-center justify-center bg-[#F7F8FC]">
         <p>Chargement...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-8">
-          <p className="text-sm font-medium text-gray-500">Dashboard</p>
-          <h1 className="text-3xl font-bold">Espace fondateur</h1>
-        </div>
-
-        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-          <div className="rounded bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-500">Total leads</p>
-            <p className="text-3xl font-bold">{leads.length}</p>
-          </div>
-
-          <div className="rounded bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-500">Pending</p>
-            <p className="text-3xl font-bold">{pendingLeads}</p>
-          </div>
-
-          <div className="rounded bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-500">Approved</p>
-            <p className="text-3xl font-bold">{approvedLeads}</p>
-          </div>
-
-          <div className="rounded bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-500">Récompenses</p>
-            <p className="text-3xl font-bold">{totalRewards} €</p>
-          </div>
-        </div>
-
-        <div className="mb-8 rounded bg-white p-6 shadow-sm">
-          <h2 className="mb-6 text-2xl font-bold">Analytics des leads</h2>
-
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="mb-8 rounded bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-2xl font-bold">Créer une campagne</h2>
-
-          <div className="grid gap-4">
-            <input
-              className="rounded border p-3"
-              placeholder="Titre"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-
-            <textarea
-              className="rounded border p-3"
-              placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-
-            <input
-              className="rounded border p-3"
-              placeholder="Récompense (€)"
-              type="number"
-              value={rewardAmount}
-              onChange={(e) => setRewardAmount(Number(e.target.value))}
-            />
-
-            <button
-              onClick={createCampaign}
-              className="rounded bg-black px-6 py-3 text-white"
-            >
-              Créer campagne
-            </button>
-          </div>
-        </div>
-
-        <h2 className="mb-4 text-2xl font-bold">Campagnes</h2>
-
-        <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-2">
-          {campaigns.map((campaign) => (
-            <div key={campaign.id} className="rounded bg-white p-6 shadow-sm">
-              <h3 className="text-xl font-bold">{campaign.title}</h3>
-              <p className="mt-2 text-gray-600">{campaign.description}</p>
-
-              <p className="mt-4 font-bold">
-                Récompense : {campaign.reward_amount} €
-              </p>
-
-              <p className="font-bold">
-                Statut : {campaign.is_active ? "Active" : "Inactive"}
-              </p>
-
-              <button
-                onClick={() =>
-                  toggleCampaign(campaign.id, campaign.is_active)
-                }
-                className="mt-4 rounded bg-black px-4 py-2 text-white"
-              >
-                {campaign.is_active ? "Désactiver" : "Activer"}
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <h2 className="mb-4 text-2xl font-bold">Leads</h2>
-
-        <div className="grid gap-4">
-          {leads.map((lead) => (
-            <div key={lead.id} className="rounded bg-white p-6 shadow-sm">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <h3 className="text-xl font-bold">{lead.full_name}</h3>
-                  <p className="text-gray-600">Email : {lead.email}</p>
-                  <p className="text-gray-600">Téléphone : {lead.phone}</p>
-                  <p className="text-gray-600">
-                    Campagne : {lead.campaigns?.title}
-                  </p>
-                </div>
-
-                <div className="text-left md:text-right">
-                  <span
-                    className={`rounded-full px-3 py-1 text-sm font-bold ${
-                      lead.status === "approved"
-                        ? "bg-green-100 text-green-700"
-                        : lead.status === "rejected"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {lead.status}
-                  </span>
-
-                  <p className="mt-3 font-bold">
-                    Récompense : {lead.campaigns?.reward_amount ?? 0} €
-                  </p>
-
-                    <div className="mt-4 flex flex-wrap gap-2 md:justify-end">
-                    <button
-                        onClick={() => updateStatus(lead.id, "approved")}
-                        className="rounded bg-green-600 px-4 py-2 text-white"
-                    >
-                        Approve
-                    </button>
-
-                    <button
-                        onClick={() => updateStatus(lead.id, "rejected")}
-                        className="rounded bg-red-600 px-4 py-2 text-white"
-                    >
-                        Reject
-                    </button>
-
-                    <button
-                        onClick={() => updateStatus(lead.id, "pending")}
-                        className="rounded bg-yellow-500 px-4 py-2 text-white"
-                    >
-                        Pending
-                    </button>
-                    </div>
-                </div>
+    <main className="min-h-screen bg-[#F7F8FC] p-3">
+      <div className="mx-auto flex min-h-[calc(100vh-24px)] max-w-7xl overflow-hidden rounded-2xl border border-slate-200 bg-[#F7F8FC]">
+        <aside className="hidden w-64 shrink-0 flex-col justify-between border-r border-slate-200 bg-white p-6 lg:flex">
+          <div>
+            <div className="mb-12 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white shadow-sm">
+                U
+              </div>
+              <div>
+                <p className="text-lg font-bold leading-5 text-slate-900">
+                  UNION
+                </p>
+                <p className="text-sm text-slate-400">Portail fondateur</p>
               </div>
             </div>
-          ))}
-        </div>
+
+            <nav className="space-y-3">
+              <a
+                href="/founder"
+                className="block rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white shadow-sm"
+              >
+                Tableau de bord
+              </a>
+
+              <a
+                href="/founder"
+                className="block rounded-xl px-4 py-3 font-semibold text-slate-500 hover:bg-slate-50"
+              >
+                Campagnes
+              </a>
+
+              <a
+                href="/founder"
+                className="block rounded-xl px-4 py-3 font-semibold text-slate-500 hover:bg-slate-50"
+              >
+                Leads
+              </a>
+
+              <a
+                href="/partner"
+                className="block rounded-xl px-4 py-3 font-semibold text-slate-500 hover:bg-slate-50"
+              >
+                Vue partenaire
+              </a>
+            </nav>
+          </div>
+
+          <div className="border-t border-slate-200 pt-6">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-600">
+                F
+              </div>
+
+              <div className="min-w-0">
+                <p className="font-bold text-slate-900">Fondateur UNION</p>
+                <p className="truncate text-sm text-slate-400">{email}</p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="font-semibold text-slate-500 hover:text-slate-900"
+            >
+              Déconnexion
+            </button>
+          </div>
+        </aside>
+
+        <section className="flex-1 overflow-y-auto px-5 py-8 md:px-10 lg:px-12">
+          <div className="mb-8">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 md:text-4xl">
+              Dashboard fondateur 🚀
+            </h1>
+            <p className="mt-2 text-lg text-slate-500">
+              Gère les campagnes, les leads et les récompenses depuis un seul espace.
+            </p>
+          </div>
+
+          <div className="mb-10 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+              <p className="text-3xl font-extrabold text-slate-950">
+                {leads.length}
+              </p>
+              <p className="mt-2 font-medium text-slate-500">Total leads</p>
+            </div>
+
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+              <p className="text-3xl font-extrabold text-slate-950">
+                {pendingLeads}
+              </p>
+              <p className="mt-2 font-medium text-slate-500">En attente</p>
+            </div>
+
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+              <p className="text-3xl font-extrabold text-slate-950">
+                {approvedLeads}
+              </p>
+              <p className="mt-2 font-medium text-slate-500">Approuvés</p>
+            </div>
+
+            <div className="rounded-2xl bg-indigo-600 p-6 text-white shadow-md shadow-indigo-200">
+              <p className="text-3xl font-extrabold">{totalRewards} €</p>
+              <p className="mt-2 font-medium text-indigo-100">Récompenses</p>
+            </div>
+          </div>
+
+          <div className="mb-10 grid gap-8 xl:grid-cols-2">
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+              <h2 className="mb-6 text-2xl font-extrabold text-slate-950">
+                Analytics des leads
+              </h2>
+
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+              <h2 className="mb-4 text-2xl font-extrabold text-slate-950">
+                Créer une campagne
+              </h2>
+
+              <div className="grid gap-4">
+                <input
+                  className="rounded-xl border border-slate-200 p-3 outline-none focus:border-indigo-600"
+                  placeholder="Titre"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+
+                <textarea
+                  className="rounded-xl border border-slate-200 p-3 outline-none focus:border-indigo-600"
+                  placeholder="Description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                />
+
+                <input
+                  className="rounded-xl border border-slate-200 p-3 outline-none focus:border-indigo-600"
+                  placeholder="Récompense (€)"
+                  type="number"
+                  value={rewardAmount}
+                  onChange={(e) => setRewardAmount(Number(e.target.value))}
+                />
+
+                <button
+                  onClick={createCampaign}
+                  className="rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white shadow-md shadow-indigo-200"
+                >
+                  Créer campagne
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <h2 className="mb-4 text-2xl font-extrabold text-slate-950">
+            Campagnes
+          </h2>
+
+          <div className="mb-10 grid grid-cols-1 gap-4 xl:grid-cols-2">
+            {campaigns.map((campaign) => (
+              <div
+                key={campaign.id}
+                className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100"
+              >
+                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                  <div>
+                    <h3 className="text-lg font-extrabold text-slate-950">
+                      {campaign.title}
+                    </h3>
+
+                    <p className="mt-1 text-slate-500">
+                      {campaign.description}
+                    </p>
+
+                    <p className="mt-3 font-extrabold text-indigo-600">
+                      1 lead approuvé = {campaign.reward_amount} €
+                    </p>
+
+                    <span
+                      className={`mt-3 inline-block rounded-full px-3 py-1 text-sm font-bold ${
+                        campaign.is_active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {campaign.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() =>
+                      toggleCampaign(campaign.id, campaign.is_active)
+                    }
+                    className="rounded-xl bg-slate-950 px-4 py-2 font-bold text-white"
+                  >
+                    {campaign.is_active ? "Désactiver" : "Activer"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <h2 className="mb-4 text-2xl font-extrabold text-slate-950">
+            Leads
+          </h2>
+
+          <div className="space-y-4">
+            {leads.map((lead) => (
+              <div
+                key={lead.id}
+                className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100"
+              >
+                <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                  <div>
+                    <h3 className="text-lg font-extrabold text-slate-950">
+                      {lead.full_name}
+                    </h3>
+                    <p className="text-sm font-medium text-slate-400">
+                      {lead.email}
+                    </p>
+                    <p className="text-sm text-slate-500">
+                      Téléphone : {lead.phone}
+                    </p>
+                    <p className="text-sm text-slate-500">
+                      Campagne : {lead.campaigns?.title}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-start gap-3 md:items-end">
+                    <span
+                      className={`rounded-full px-3 py-1 text-sm font-bold ${
+                        lead.status === "approved"
+                          ? "bg-green-100 text-green-700"
+                          : lead.status === "rejected"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {lead.status === "pending"
+                        ? "En attente"
+                        : lead.status === "approved"
+                        ? "Approuvé"
+                        : "Refusé"}
+                    </span>
+
+                    <p className="font-extrabold text-indigo-600">
+                      {lead.campaigns?.reward_amount ?? 0} €
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => updateStatus(lead.id, "approved")}
+                        className="rounded-xl bg-green-600 px-4 py-2 font-bold text-white"
+                      >
+                        Approve
+                      </button>
+
+                      <button
+                        onClick={() => updateStatus(lead.id, "rejected")}
+                        className="rounded-xl bg-red-600 px-4 py-2 font-bold text-white"
+                      >
+                        Reject
+                      </button>
+
+                      <button
+                        onClick={() => updateStatus(lead.id, "pending")}
+                        className="rounded-xl bg-yellow-500 px-4 py-2 font-bold text-white"
+                      >
+                        Pending
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
     </main>
   );
