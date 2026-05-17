@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -9,7 +9,7 @@ type Campaign = {
   title: string;
 };
 
-export default function LeadPage() {
+function LeadPageContent() {
   const searchParams = useSearchParams();
   const campaignFromUrl = searchParams.get("campaign");
 
@@ -142,4 +142,17 @@ export default function LeadPage() {
       </div>
     </main>
   );
+}
+export default function LeadPage() {
+
+  return (
+
+    <Suspense>
+
+      <LeadPageContent />
+
+    </Suspense>
+
+  );
+
 }
