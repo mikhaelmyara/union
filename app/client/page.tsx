@@ -22,6 +22,7 @@ export default function ClientPage() {
   const [loading, setLoading] = useState(true);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [referralCode, setReferralCode] = useState("");
 
   useEffect(() => {
     async function loadPage() {
@@ -33,6 +34,14 @@ export default function ClientPage() {
         window.location.href = "/login";
         return;
       }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("referral_code")
+        .eq("id", user.id)
+        .single();
+
+      setReferralCode(profile?.referral_code ?? "");
 
       const { data: campaignsData } = await supabase
         .from("campaigns")
@@ -67,9 +76,10 @@ export default function ClientPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
+    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">          <div>
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
             <p className="text-sm font-medium text-gray-500">Dashboard</p>
             <h1 className="text-3xl font-bold">Espace client</h1>
           </div>
@@ -82,7 +92,15 @@ export default function ClientPage() {
           </button>
         </div>
 
-          <div className="mb-8 grid gap-4 grid-cols-1 md:grid-cols-3">
+        <div className="mb-8 rounded bg-white p-6 shadow-sm">
+          <p className="text-sm text-gray-500">Mon code de parrainage</p>
+          <p className="mt-2 text-3xl font-bold">{referralCode}</p>
+          <p className="mt-2 text-sm text-gray-500">
+            Donne ce code à une personne pour qu’elle l’ajoute dans le formulaire lead.
+          </p>
+        </div>
+
+        <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded bg-white p-6 shadow-sm">
             <p className="text-sm text-gray-500">Campagnes actives</p>
             <p className="text-3xl font-bold">{campaigns.length}</p>
