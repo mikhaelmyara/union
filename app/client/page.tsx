@@ -76,111 +76,148 @@ export default function ClientPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50">
+      <main className="flex min-h-screen items-center justify-center bg-[#F7F8FC]">
         <p>Chargement...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex min-h-screen max-w-7xl rounded border bg-white">
-        <aside className="hidden w-72 flex-col justify-between border-r bg-white p-6 md:flex">
+    <main className="min-h-screen bg-[#F7F8FC] p-3">
+      <div className="mx-auto flex min-h-[calc(100vh-24px)] max-w-7xl overflow-hidden rounded-2xl border border-slate-200 bg-[#F7F8FC]">
+        <aside className="hidden w-64 shrink-0 flex-col justify-between border-r border-slate-200 bg-white p-6 lg:flex">
           <div>
-            <div className="mb-10 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white">
+            <div className="mb-12 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white shadow-sm">
                 U
               </div>
               <div>
-                <p className="font-bold">UNION</p>
-                <p className="text-sm text-gray-500">Portail client</p>
+                <p className="text-lg font-bold leading-5 text-slate-900">
+                  UNION
+                </p>
+                <p className="text-sm text-slate-400">Portail client</p>
               </div>
             </div>
 
-            <nav className="space-y-2">
-              <a className="block rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white" href="/client">
+            <nav className="space-y-3">
+              <a
+                href="/client"
+                className="block rounded-xl bg-indigo-600 px-4 py-3 font-bold text-white shadow-sm"
+              >
                 Tableau de bord
               </a>
-              <a className="block rounded-xl px-4 py-3 font-medium text-gray-600" href="/client">
+
+              <a
+                href="/client"
+                className="block rounded-xl px-4 py-3 font-semibold text-slate-500 hover:bg-slate-50"
+              >
                 Campagnes
               </a>
-              <a className="block rounded-xl px-4 py-3 font-medium text-gray-600" href="/lead">
-                Nouveau lead
+
+              <a
+                href="/lead"
+                className="block rounded-xl px-4 py-3 font-semibold text-slate-500 hover:bg-slate-50"
+              >
+                Mes parrainages
               </a>
-              <a className="block rounded-xl px-4 py-3 font-medium text-gray-600" href="/dashboard">
-                Mon espace
+
+              <a
+                href="/dashboard"
+                className="block rounded-xl px-4 py-3 font-semibold text-slate-500 hover:bg-slate-50"
+              >
+                Paramètres
               </a>
             </nav>
           </div>
 
-          <div className="border-t pt-6">
-            <p className="font-bold">Client UNION</p>
-            <p className="mb-6 text-sm text-gray-500">{email}</p>
+          <div className="border-t border-slate-200 pt-6">
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-600">
+                U
+              </div>
+
+              <div className="min-w-0">
+                <p className="font-bold text-slate-900">Client UNION</p>
+                <p className="truncate text-sm text-slate-400">{email}</p>
+              </div>
+            </div>
 
             <button
               onClick={handleLogout}
-              className="text-sm font-bold text-gray-500"
+              className="font-semibold text-slate-500 hover:text-slate-900"
             >
               Déconnexion
             </button>
           </div>
         </aside>
 
-        <section className="flex-1 p-4 md:p-10">
-          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <section className="flex-1 overflow-y-auto px-5 py-8 md:px-10 lg:px-12">
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-              <h1 className="text-3xl font-bold md:text-4xl">
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 md:text-4xl">
                 Bon retour sur UNION 👋
               </h1>
-              <p className="mt-2 text-gray-500">
+              <p className="mt-2 text-lg text-slate-500">
                 Voici un résumé de ton activité de parrainage.
               </p>
             </div>
 
             <a
               href="/lead"
-              className="rounded-xl bg-indigo-600 px-5 py-3 text-center font-bold text-white shadow-sm"
+              className="rounded-xl bg-indigo-600 px-5 py-3 text-center font-bold text-white shadow-md shadow-indigo-200"
             >
               + Nouveau lead
             </a>
           </div>
 
-          <div className="mb-8 rounded-2xl bg-white p-6 shadow-sm">
-            <p className="text-sm text-gray-500">Mon code de parrainage</p>
-            <p className="mt-2 text-3xl font-bold text-indigo-600">
+          <div className="mb-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+            <p className="text-sm font-medium text-slate-500">
+              Mon code de parrainage
+            </p>
+            <p className="mt-2 text-4xl font-extrabold tracking-tight text-indigo-600">
               {referralCode}
             </p>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-slate-500">
               Partage ce code pour relier les leads à ton compte.
             </p>
           </div>
 
-          <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-4">
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-3xl font-bold">{leads.length}</p>
-              <p className="mt-2 text-gray-500">Total leads</p>
+          <div className="mb-10 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+              <p className="text-3xl font-extrabold text-slate-950">
+                {leads.length}
+              </p>
+              <p className="mt-2 font-medium text-slate-500">Total leads</p>
             </div>
 
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-3xl font-bold">{pendingLeads}</p>
-              <p className="mt-2 text-gray-500">En attente</p>
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+              <p className="text-3xl font-extrabold text-slate-950">
+                {pendingLeads}
+              </p>
+              <p className="mt-2 font-medium text-slate-500">En attente</p>
             </div>
 
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-3xl font-bold">{approvedLeads}</p>
-              <p className="mt-2 text-gray-500">Approuvés</p>
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+              <p className="text-3xl font-extrabold text-slate-950">
+                {approvedLeads}
+              </p>
+              <p className="mt-2 font-medium text-slate-500">Approuvés</p>
             </div>
 
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-3xl font-bold">{rejectedLeads}</p>
-              <p className="mt-2 text-gray-500">Refusés</p>
+            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+              <p className="text-3xl font-extrabold text-slate-950">
+                {rejectedLeads}
+              </p>
+              <p className="mt-2 font-medium text-slate-500">Refusés</p>
             </div>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-2">
-            <div>
+          <div className="grid gap-8 xl:grid-cols-2">
+            <section>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Campagnes actives</h2>
+                <h2 className="text-2xl font-extrabold text-slate-950">
+                  Campagnes actives
+                </h2>
                 <a href="/client" className="font-bold text-indigo-600">
                   Voir tout →
                 </a>
@@ -191,29 +228,33 @@ export default function ClientPage() {
                   <a
                     key={campaign.id}
                     href={`/lead?campaign=${campaign.id}`}
-                    className="block rounded-2xl bg-white p-6 shadow-sm"
+                    className="block rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:shadow-md"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-4">
                       <div>
-                        <h3 className="font-bold">{campaign.title}</h3>
-                        <p className="mt-1 text-sm text-gray-500">
+                        <h3 className="text-lg font-extrabold text-slate-950">
+                          {campaign.title}
+                        </h3>
+                        <p className="mt-1 line-clamp-2 text-slate-500">
                           {campaign.description}
                         </p>
-                        <p className="mt-3 font-bold text-indigo-600">
+                        <p className="mt-3 font-extrabold text-indigo-600">
                           1 lead approuvé = {campaign.reward_amount} €
                         </p>
                       </div>
 
-                      <span className="text-2xl text-gray-300">→</span>
+                      <span className="text-3xl text-slate-300">→</span>
                     </div>
                   </a>
                 ))}
               </div>
-            </div>
+            </section>
 
-            <div>
+            <section>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Mes parrainages récents</h2>
+                <h2 className="text-2xl font-extrabold text-slate-950">
+                  Mes parrainages récents
+                </h2>
                 <a href="/client" className="font-bold text-indigo-600">
                   Voir tout →
                 </a>
@@ -221,19 +262,23 @@ export default function ClientPage() {
 
               <div className="space-y-4">
                 {leads.length === 0 ? (
-                  <div className="rounded-2xl bg-white p-6 text-gray-500 shadow-sm">
+                  <div className="rounded-2xl bg-white p-6 text-slate-500 shadow-sm ring-1 ring-slate-100">
                     Aucun lead pour le moment.
                   </div>
                 ) : (
                   leads.slice(0, 5).map((lead) => (
                     <div
                       key={lead.id}
-                      className="rounded-2xl bg-white p-6 shadow-sm"
+                      className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100"
                     >
                       <div className="flex items-center justify-between gap-4">
                         <div>
-                          <h3 className="font-bold">{lead.full_name}</h3>
-                          <p className="text-sm text-gray-500">{lead.email}</p>
+                          <h3 className="font-extrabold text-slate-950">
+                            {lead.full_name}
+                          </h3>
+                          <p className="text-sm font-medium text-slate-400">
+                            {lead.email}
+                          </p>
                         </div>
 
                         <span
@@ -256,7 +301,7 @@ export default function ClientPage() {
                   ))
                 )}
               </div>
-            </div>
+            </section>
           </div>
         </section>
       </div>
