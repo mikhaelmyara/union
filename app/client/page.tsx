@@ -87,8 +87,7 @@ export default function ClientPage() {
       <div className="mx-auto flex min-h-[calc(100vh-24px)] max-w-7xl overflow-hidden rounded-2xl border border-slate-200 bg-[#F7F8FC]">
         <aside className="hidden w-64 shrink-0 flex-col justify-between border-r border-slate-200 bg-white p-6 lg:flex">
           <div>
-            <div className="mb-12 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white shadow-sm">
+            <a href="/" className="mb-12 flex items-center gap-3">              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white shadow-sm">
                 U
               </div>
               <div>
@@ -97,7 +96,7 @@ export default function ClientPage() {
                 </p>
                 <p className="text-sm text-slate-400">Portail client</p>
               </div>
-            </div>
+            </a>
 
             <nav className="space-y-3">
               <a
@@ -107,22 +106,23 @@ export default function ClientPage() {
                 Tableau de bord
               </a>
 
+             <a
+
+                    href="/campaigns"
+                    className="block rounded-xl px-4 py-3 font-semibold text-slate-500 hover:bg-slate-50"
+                    >
+                    Campagnes
+                    </a>
+
               <a
-                href="/client"
+                href="/leads"
                 className="block rounded-xl px-4 py-3 font-semibold text-slate-500 hover:bg-slate-50"
               >
-                Campagnes
+                Mes leads
               </a>
 
               <a
-                href="/lead"
-                className="block rounded-xl px-4 py-3 font-semibold text-slate-500 hover:bg-slate-50"
-              >
-                Mes parrainages
-              </a>
-
-              <a
-                href="/dashboard"
+                href="/settings"
                 className="block rounded-xl px-4 py-3 font-semibold text-slate-500 hover:bg-slate-50"
               >
                 Paramètres
