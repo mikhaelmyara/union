@@ -16,7 +16,6 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "UNION",
-
   description: "Plateforme de campagnes, leads, partenaires et récompenses",
 };
 
@@ -27,17 +26,12 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="fr"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-    <body className="min-h-full flex flex-col">
-
-    <Navbar />
-
-  {children}
-  <Footer />
-
-      </body>    
-      </html>
+      <body className="min-h-full bg-slate-50">
+        {children}
+      </body>
+    </html>
   );
 }
