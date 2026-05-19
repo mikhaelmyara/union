@@ -1,5 +1,6 @@
 "use client";
 
+import PageActions from "@/components/PageActions";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -32,19 +33,19 @@ export default function SettingsPage() {
   return (
     <main className="min-h-screen bg-[#F7F8FC] p-6">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <p className="font-bold text-indigo-600">Paramètres</p>
-            <h1 className="mt-2 text-4xl font-extrabold">Mon compte</h1>
-          </div>
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+                <p className="font-bold text-indigo-600">
+                Paramètres
+                </p>
 
-          <a
-            href="/client"
-            className="rounded-xl bg-black px-5 py-3 font-bold text-white"
-          >
-            Retour
-          </a>
-        </div>
+                <h1 className="mt-2 text-4xl font-extrabold">
+                Mon compte
+                </h1>
+            </div>
+
+            <PageActions backHref="/client" />
+            </div>
 
         <div className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-extrabold">Informations</h2>

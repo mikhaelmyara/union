@@ -1,14 +1,15 @@
 "use client";
 
+import PageActions from "@/components/PageActions";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-type Lead = {
+type Engagement = {
   id: string;
   full_name: string;
   email: string;
-  phone: string;
-  status: string;
+  phone: string | null;
+  status: "pending" | "approved" | "rejected";
   created_at: string;
   campaign_title_snapshot: string | null;
   campaigns: {
@@ -16,12 +17,14 @@ type Lead = {
   } | null;
 };
 
-export default function LeadsPage() {
-  const [leads, setLeads] = useState<Lead[]>([]);
+export default function EngagementsPage() {
+  const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
-    async function loadLeads() {
+    async function loadEngagements() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -34,18 +37,41 @@ export default function LeadsPage() {
       const { data } = await supabase
         .from("leads")
         .select(`
-          *,
+          id,
+          full_name,
+          email,
+          phone,
+          status,
+          created_at,
+          campaign_title_snapshot,
           campaigns(title)
         `)
         .eq("client_id", user.id)
         .order("created_at", { ascending: false });
 
-      setLeads(data as Lead[]);
-      setLoading(false);
+            setEngagements((data as unknown as Engagement[]) ?? []);
+        setLoading(false);
     }
 
-    loadLeads();
+    loadEngagements();
   }, []);
+
+  const filteredEngagements = engagements.filter((engagement) => {
+    const campaignName =
+      engagement.campaigns?.title ||
+      engagement.campaign_title_snapshot ||
+      "Campagne supprimée";
+
+    const matchesSearch =
+      `${engagement.full_name} ${engagement.email} ${engagement.phone ?? ""} ${campaignName}`
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "all" || engagement.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   if (loading) {
     return (
@@ -58,53 +84,78 @@ export default function LeadsPage() {
   return (
     <main className="min-h-screen bg-[#F7F8FC] p-6">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-10 flex items-center justify-between">
+        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="font-bold text-indigo-600">
-              Leads
+              Engagements
             </p>
 
             <h1 className="mt-2 text-4xl font-extrabold">
-              Tous mes leads
+              Tous mes engagements
             </h1>
           </div>
 
-          <a
-            href="/client"
-            className="rounded-xl bg-black px-5 py-3 font-bold text-white"
-          >
-            Retour
-          </a>
+          <PageActions backHref="/client" />
+        </div>
+
+        <div className="mb-6">
+          <input
+            className="w-full rounded-2xl border border-slate-200 bg-white p-4 outline-none focus:border-indigo-600"
+            placeholder="Rechercher un engagement..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="mb-6 flex flex-wrap gap-3">
+          {[
+            { label: "Tous", value: "all" },
+            { label: "En attente", value: "pending" },
+            { label: "Approuvés", value: "approved" },
+            { label: "Refusés", value: "rejected" },
+          ].map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => setStatusFilter(filter.value)}
+              className={`rounded-xl px-4 py-2 font-bold ${
+                statusFilter === filter.value
+                  ? "bg-indigo-600 text-white"
+                  : "bg-white text-slate-600 ring-1 ring-slate-200"
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
         </div>
 
         <div className="space-y-4">
-          {leads.length === 0 ? (
+          {filteredEngagements.length === 0 ? (
             <div className="rounded-2xl bg-white p-6 shadow-sm">
-              Aucun lead pour le moment.
+              Aucun engagement pour le moment.
             </div>
           ) : (
-            leads.map((lead) => (
+            filteredEngagements.map((engagement) => (
               <div
-                key={lead.id}
+                key={engagement.id}
                 className="rounded-2xl bg-white p-6 shadow-sm"
               >
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <h2 className="text-2xl font-extrabold">
-                      {lead.full_name}
+                      {engagement.full_name}
                     </h2>
 
                     <p className="mt-1 text-slate-500">
-                      {lead.email}
+                      {engagement.email}
                     </p>
 
                     <p className="text-slate-500">
-                      {lead.phone}
+                      {engagement.phone}
                     </p>
 
                     <p className="mt-3 font-bold text-indigo-600">
-                      {lead.campaigns?.title ||
-                        lead.campaign_title_snapshot ||
+                      {engagement.campaigns?.title ||
+                        engagement.campaign_title_snapshot ||
                         "Campagne supprimée"}
                     </p>
                   </div>
@@ -112,24 +163,22 @@ export default function LeadsPage() {
                   <div className="flex flex-col items-start gap-3 md:items-end">
                     <span
                       className={`rounded-full px-3 py-1 text-sm font-bold ${
-                        lead.status === "approved"
+                        engagement.status === "approved"
                           ? "bg-green-100 text-green-700"
-                          : lead.status === "rejected"
+                          : engagement.status === "rejected"
                           ? "bg-red-100 text-red-700"
                           : "bg-yellow-100 text-yellow-700"
                       }`}
                     >
-                      {lead.status === "pending"
+                      {engagement.status === "pending"
                         ? "En attente"
-                        : lead.status === "approved"
+                        : engagement.status === "approved"
                         ? "Approuvé"
                         : "Refusé"}
                     </span>
 
                     <p className="text-sm text-slate-400">
-                      {new Date(
-                        lead.created_at
-                      ).toLocaleDateString()}
+                      {new Date(engagement.created_at).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
