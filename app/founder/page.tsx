@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import * as XLSX from "xlsx";
@@ -167,17 +168,17 @@ const [challengeEndDate, setChallengeEndDate] =
 
 async function createChallenge() {
   if (!challengeTitle.trim()) {
-    alert("Le titre du challenge est obligatoire.");
+    toast.error("Le titre du challenge est obligatoire.");
     return;
   }
 
   if (challengeReward <= 0) {
-    alert("La récompense du challenge doit être supérieure à 0.");
+    toast.error("La récompense du challenge doit être supérieure à 0.");
     return;
   }
 
   if (!challengeStartDate || !challengeEndDate) {
-    alert("Les dates du challenge sont obligatoires.");
+    toast.error("Les dates du challenge sont obligatoires.");
     return;
   }
 
@@ -191,11 +192,11 @@ async function createChallenge() {
   });
 
   if (error) {
-    alert(error.message);
+    toast.error(error.message);
     return;
   }
 
-  alert("Challenge créé ✅");
+  toast.success("Challenge créé.");
 
   setChallengeTitle("");
   setChallengeDescription("");
@@ -217,7 +218,7 @@ async function toggleChallenge(
     .eq("id", challengeId);
 
   if (error) {
-    alert(error.message);
+    toast.error(error.message);
     return;
   }
 
@@ -227,22 +228,22 @@ async function toggleChallenge(
     if (creatingCampaign) return;
 
     if (!title.trim()) {
-      alert("Le titre est obligatoire.");
+      toast.error("Le titre est obligatoire.");
       return;
     }
 
     if (description.trim().length < 10) {
-      alert("La description doit contenir au moins 10 caractères.");
+      toast.error("La description doit contenir au moins 10 caractères.");
       return;
     }
 
     if (rewardAmount <= 0) {
-      alert("La récompense doit être supérieure à 0.");
+      toast.error("La récompense doit être supérieure à 0.");
       return;
     }
 
     if (referralRewardAmount < 0) {
-      alert("La récompense parrain ne peut pas être négative.");
+      toast.error("La récompense parrain ne peut pas être négative.");
       return;
     }
 
@@ -258,11 +259,11 @@ async function toggleChallenge(
     setCreatingCampaign(false);
 
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       return;
     }
 
-    alert("Campagne créée ✅");
+    toast.success("Campagne créée.");
 
     setTitle("");
     setDescription("");
@@ -279,7 +280,7 @@ async function toggleChallenge(
       .eq("id", campaignId);
 
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       return;
     }
 
@@ -299,7 +300,7 @@ async function toggleChallenge(
       .eq("id", campaignId);
 
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       return;
     }
 
@@ -316,7 +317,7 @@ async function toggleChallenge(
     .eq("id", leadId);
 
   if (updateError) {
-    alert(updateError.message);
+    toast.error(updateError.message);
     return;
   }
 
@@ -345,7 +346,7 @@ async function toggleChallenge(
     .single();
 
   if (leadError || !leadData) {
-    alert(leadError?.message || "Engagement introuvable.");
+    toast.error(leadError?.message || "Engagement introuvable.");
     return;
   }
 
@@ -356,7 +357,7 @@ async function toggleChallenge(
   const clientId = leadData.client_id;
 
   if (!clientId) {
-    alert("Cet engagement n'a pas de client associé.");
+    toast.error("Cet engagement n'a pas de client associé.");
     return;
   }
 
@@ -385,7 +386,7 @@ async function toggleChallenge(
     );
 
     if (directError) {
-      alert(directError.message);
+      toast.error(directError.message);
       return;
     }
   }
@@ -405,7 +406,7 @@ async function toggleChallenge(
     );
 
     if (referralError) {
-      alert(referralError.message);
+      toast.error(referralError.message);
       return;
     }
   }

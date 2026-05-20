@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 
 export default function SignupPage() {
@@ -11,74 +12,83 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
 
   const [birthDate, setBirthDate] = useState("");
-
-  const [referralCode, setReferralCode] =
-    useState("");
+  const [referralCode, setReferralCode] = useState("");
 
   const [loading, setLoading] = useState(false);
 
   async function handleSignup() {
     if (loading) return;
 
-    const cleanReferralCode =
-      referralCode.trim().toUpperCase();
+    const cleanFirstName = firstName.trim();
+    const cleanLastName = lastName.trim();
+    const cleanEmail = email.trim();
+    const cleanReferralCode = referralCode.trim().toUpperCase();
+
+    if (!cleanFirstName) {
+      toast.error("Le prénom est obligatoire.");
+      return;
+    }
+
+    if (!cleanLastName) {
+      toast.error("Le nom est obligatoire.");
+      return;
+    }
+
+    if (!birthDate) {
+      toast.error("La date de naissance est obligatoire.");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Le mot de passe doit contenir au moins 6 caractères.");
+      return;
+    }
 
     if (cleanReferralCode !== "") {
-      const { data: existingProfile } =
-        await supabase
-          .from("profiles")
-          .select("id")
-          .eq(
-            "referral_code",
-            cleanReferralCode
-          )
-          .single();
+      const { data: existingProfile, error: referralError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("referral_code", cleanReferralCode)
+        .maybeSingle();
+
+      if (referralError) {
+        toast.error(referralError.message);
+        return;
+      }
 
       if (!existingProfile) {
-        alert("Code parrain invalide.");
+        toast.error("Code parrain invalide.");
         return;
       }
     }
 
-    if (!firstName.trim()) {
-      alert("Le prénom est obligatoire.");
-      return;
-    }
-
-    if (!lastName.trim()) {
-      alert("Le nom est obligatoire.");
-      return;
-    }
-
     setLoading(true);
 
-    const { error } =
-      await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName.trim(),
-            last_name: lastName.trim(),
-
-            birth_date: birthDate,
-
-            referral_code_used:
-              cleanReferralCode,
-          },
+    const { error } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        data: {
+          first_name: cleanFirstName,
+          last_name: cleanLastName,
+          birth_date: birthDate,
+          referral_code_used: cleanReferralCode,
         },
-      });
+      },
+    });
 
     setLoading(false);
 
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
       return;
     }
 
-    alert("Compte créé ✅");
+    toast.success("Compte créé.");
 
-    window.location.href = "/login";
+    setTimeout(() => {
+      window.location.href = "/login";
+    }, 700);
   }
 
   return (
@@ -90,9 +100,7 @@ export default function SignupPage() {
         }}
         className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-100"
       >
-        <h1 className="text-3xl font-extrabold">
-          Créer un compte
-        </h1>
+        <h1 className="text-3xl font-extrabold">Créer un compte</h1>
 
         <p className="mt-2 text-slate-500">
           Rejoins UNION en quelques secondes.
@@ -104,9 +112,7 @@ export default function SignupPage() {
               className="rounded-xl border p-3"
               placeholder="Prénom"
               value={firstName}
-              onChange={(e) =>
-                setFirstName(e.target.value)
-              }
+              onChange={(e) => setFirstName(e.target.value)}
               required
             />
 
@@ -114,9 +120,7 @@ export default function SignupPage() {
               className="rounded-xl border p-3"
               placeholder="Nom"
               value={lastName}
-              onChange={(e) =>
-                setLastName(e.target.value)
-              }
+              onChange={(e) => setLastName(e.target.value)}
               required
             />
           </div>
@@ -126,9 +130,7 @@ export default function SignupPage() {
             placeholder="Email"
             type="email"
             value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
 
@@ -137,9 +139,7 @@ export default function SignupPage() {
             placeholder="Mot de passe"
             type="password"
             value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
 
@@ -152,9 +152,7 @@ export default function SignupPage() {
               className="w-full rounded-xl border p-3"
               type="date"
               value={birthDate}
-              onChange={(e) =>
-                setBirthDate(e.target.value)
-              }
+              onChange={(e) => setBirthDate(e.target.value)}
               required
             />
           </div>
@@ -163,11 +161,7 @@ export default function SignupPage() {
             className="rounded-xl border p-3"
             placeholder="Code parrain optionnel"
             value={referralCode}
-            onChange={(e) =>
-              setReferralCode(
-                e.target.value.toUpperCase()
-              )
-            }
+            onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
           />
 
           <button
@@ -175,15 +169,10 @@ export default function SignupPage() {
             disabled={loading}
             className="rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading
-              ? "Création..."
-              : "S’inscrire"}
+            {loading ? "Création..." : "S’inscrire"}
           </button>
 
-          <a
-            href="/login"
-            className="text-center font-bold text-indigo-600"
-          >
+          <a href="/login" className="text-center font-bold text-indigo-600">
             Déjà un compte ? Connexion
           </a>
         </div>
