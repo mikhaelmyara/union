@@ -1,6 +1,11 @@
 "use client";
 
-import PageActions from "@/components/PageActions";
+import MobileHeader from "@/components/mobile/MobileHeader";
+import MobileBottomNav from "@/components/mobile/MobileBottomNav";
+import DashboardNav from "@/components/layout/DashboardNav";
+import PageShell from "@/components/layout/PageShell";
+import EmptyState from "@/components/ui/EmptyState";
+import StatusBadge from "@/components/ui/StatusBadge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -49,8 +54,8 @@ export default function EngagementsPage() {
         .eq("client_id", user.id)
         .order("created_at", { ascending: false });
 
-        setEngagements((data as unknown as Engagement[]) ?? []);
-        setLoading(false);
+      setEngagements((data as unknown as Engagement[]) ?? []);
+      setLoading(false);
     }
 
     loadEngagements();
@@ -82,76 +87,21 @@ export default function EngagementsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F8FC] p-6">
-      <div className="mx-auto max-w-6xl">
-            <div className="mb-8 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <a href="/" className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white">
-                    U
-                  </div>
+  <>
+    <MobileHeader title="Mes engagements" subtitle="UNION" />
 
-                  <div>
-                    <p className="font-extrabold text-slate-950">UNION</p>
-                    <p className="text-sm text-slate-400">Portail client</p>
-                  </div>
-                </a>
+    <PageShell eyebrow="Engagements" title="Tous mes engagements" backHref="/client">
+      <DashboardNav active="engagements" />
 
-                <nav className="flex flex-wrap gap-2">
-                  <a
-                    href="/client"
-                    className="rounded-xl px-4 py-2 font-bold text-slate-500 hover:bg-slate-50"
-                  >
-                    Dashboard
-                  </a>
+      <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+        <input
+          className="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-indigo-600"
+          placeholder="Rechercher un engagement..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
-                  <a
-                    href="/campaigns"
-                    className="rounded-xl bg-indigo-600 px-4 py-2 font-bold text-white"
-                  >
-                    Campagnes
-                  </a>
-
-                  <a
-                    href="/leads"
-                    className="rounded-xl bg-indigo-600 px-4 py-2 font-bold text-white"
-                  >
-                    Engagements
-                  </a>
-
-                  <a
-                    href="/settings"
-                    className="rounded-xl bg-indigo-600 px-4 py-2 font-bold text-white  "
-                  >
-                    Paramètres
-                  </a>
-                </nav>
-              </div>
-            </div>
-        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="font-bold text-indigo-600">
-              Engagements
-            </p>
-
-            <h1 className="mt-2 text-4xl font-extrabold">
-              Tous mes engagements
-            </h1>
-          </div>
-
-          <PageActions backHref="/client" />
-        </div>
-
-        <div className="mb-6">
-          <input
-            className="w-full rounded-2xl border border-slate-200 bg-white p-4 outline-none focus:border-indigo-600"
-            placeholder="Rechercher un engagement..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        <div className="mb-6 flex flex-wrap gap-3">
+        <div className="mt-4 flex flex-wrap gap-3">
           {[
             { label: "Tous", value: "all" },
             { label: "En attente", value: "pending" },
@@ -171,66 +121,48 @@ export default function EngagementsPage() {
             </button>
           ))}
         </div>
+      </div>
 
-        <div className="space-y-4">
-          {filteredEngagements.length === 0 ? (
-            <div className="rounded-2xl bg-white p-6 shadow-sm">
-              Aucun engagement pour le moment.
-            </div>
-          ) : (
-            filteredEngagements.map((engagement) => (
-              <div
-                key={engagement.id}
-                className="rounded-2xl bg-white p-6 shadow-sm"
-              >
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <h2 className="text-2xl font-extrabold">
-                      {engagement.full_name}
-                    </h2>
+      <div className="space-y-4">
+        {filteredEngagements.length === 0 ? (
+          <EmptyState message="Aucun engagement pour le moment." />
+        ) : (
+          filteredEngagements.map((engagement) => (
+            <div
+              key={engagement.id}
+              className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100"
+            >
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h2 className="text-2xl font-extrabold text-slate-950">
+                    {engagement.full_name}
+                  </h2>
 
-                    <p className="mt-1 text-slate-500">
-                      {engagement.email}
-                    </p>
+                  <p className="mt-1 text-slate-500">{engagement.email}</p>
+                  <p className="text-slate-500">{engagement.phone}</p>
 
-                    <p className="text-slate-500">
-                      {engagement.phone}
-                    </p>
+                  <p className="mt-3 font-bold text-indigo-600">
+                    {engagement.campaigns?.title ||
+                      engagement.campaign_title_snapshot ||
+                      "Campagne supprimée"}
+                  </p>
+                </div>
 
-                    <p className="mt-3 font-bold text-indigo-600">
-                      {engagement.campaigns?.title ||
-                        engagement.campaign_title_snapshot ||
-                        "Campagne supprimée"}
-                    </p>
-                  </div>
+                <div className="flex flex-col items-start gap-3 md:items-end">
+                  <StatusBadge status={engagement.status} />
 
-                  <div className="flex flex-col items-start gap-3 md:items-end">
-                    <span
-                      className={`rounded-full px-3 py-1 text-sm font-bold ${
-                        engagement.status === "approved"
-                          ? "bg-green-100 text-green-700"
-                          : engagement.status === "rejected"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {engagement.status === "pending"
-                        ? "En attente"
-                        : engagement.status === "approved"
-                        ? "Approuvé"
-                        : "Refusé"}
-                    </span>
-
-                    <p className="text-sm text-slate-400">
-                      {new Date(engagement.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
+                  <p className="text-sm text-slate-400">
+                    {new Date(engagement.created_at).toLocaleDateString()}
+                  </p>
                 </div>
               </div>
-            ))
-          )}
-        </div>
+            </div>
+          ))
+        )}
       </div>
-    </main>
-  );
+        </PageShell>
+
+    <MobileBottomNav active="engagements" />
+  </>
+);
 }

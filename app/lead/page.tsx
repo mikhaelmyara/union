@@ -25,7 +25,6 @@ function LeadPageContent() {
   const [countryCode, setCountryCode] = useState("+33");
   const [phone, setPhone] = useState("");
 
-  const [referralCode, setReferralCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -76,8 +75,6 @@ function LeadPageContent() {
     const cleanEmail = email.trim();
     const cleanCountryCode = countryCode.trim();
     const cleanPhone = phone.replace(/\s/g, "");
-    const cleanReferralCode = referralCode.trim().toUpperCase();
-
     const fullPhone = `${cleanCountryCode}${cleanPhone}`;
 
     if (!campaignId) {
@@ -118,31 +115,10 @@ function LeadPageContent() {
       return;
     }
 
-    let partnerId = null;
-
-    if (cleanReferralCode !== "") {
-      const { data: partnerProfile, error: referralError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("referral_code", cleanReferralCode)
-        .maybeSingle();
-
-      if (referralError) {
-        setSubmitting(false);
-        toast.error(referralError.message);
-        return;
-      }
-
-      if (partnerProfile) {
-        partnerId = partnerProfile.id;
-      }
-    }
 
     const { error } = await supabase.from("leads").insert({
       campaign_id: campaignId,
       client_id: user.id,
-      partner_id: partnerId,
-      referral_code: cleanReferralCode,
       full_name: cleanFullName,
       email: cleanEmail,
       phone: fullPhone,
@@ -237,13 +213,6 @@ function LeadPageContent() {
                 required
               />
             </div>
-
-            <input
-              className="rounded-xl border p-3"
-              placeholder="Code de parrainage optionnel"
-              value={referralCode}
-              onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-            />
 
             <button
               type="submit"

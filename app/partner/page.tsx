@@ -1,8 +1,14 @@
 "use client";
 
+import MobileHeader from "@/components/mobile/MobileHeader";
+import MobileBottomNav from "@/components/mobile/MobileBottomNav";
+import DashboardNav from "@/components/layout/DashboardNav";
+import PageShell from "@/components/layout/PageShell";
+import EmptyState from "@/components/ui/EmptyState";
+import StatCard from "@/components/ui/StatCard";
+import StatusBadge from "@/components/ui/StatusBadge";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import PageActions from "@/components/PageActions";
 
 type Engagement = {
   id: string;
@@ -112,162 +118,103 @@ export default function PartnerPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F8FC] p-6">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="font-bold text-indigo-600">Partenaire</p>
+  <>
+    <MobileHeader title="Partenaire" subtitle="UNION" />
 
-            <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-950">
-              Dashboard partenaire 🚀
-            </h1>
+    <PageShell
+      eyebrow="Partenaire"
+      title="Dashboard partenaire 🚀"
+      description="Suivez vos engagements, vos gains directs et vos commissions de parrainage."
+      backHref="/client"
+    >
+      <DashboardNav active="partner" variant="partner" />
 
-            <p className="mt-3 text-lg text-slate-500">
-              Suivez vos engagements, vos gains directs et vos commissions de parrainage.
-            </p>
+      <div className="mb-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+        <p className="text-sm font-bold uppercase tracking-wide text-slate-400">
+          Mon code parrain
+        </p>
+
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          <div className="rounded-xl bg-indigo-600 px-5 py-3 text-2xl font-extrabold text-white">
+            {referralCode}
           </div>
 
-          <PageActions backHref="/" />
-        </div>
-
-        <div className="mb-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-          <p className="text-sm font-bold uppercase tracking-wide text-slate-400">
-            Mon code parrain
+          <p className="max-w-xl text-slate-500">
+            Partagez ce code pour inviter d’autres utilisateurs à rejoindre UNION.
           </p>
-
-          <div className="mt-3 flex flex-wrap items-center gap-4">
-            <div className="rounded-xl bg-indigo-600 px-5 py-3 text-2xl font-extrabold text-white">
-              {referralCode}
-            </div>
-
-            <p className="max-w-xl text-slate-500">
-              Partagez ce code pour inviter d’autres utilisateurs à rejoindre UNION.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-6">
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-            <p className="text-3xl font-extrabold text-slate-950">
-              {engagements.length}
-            </p>
-            <p className="mt-2 text-slate-500">Total engagements</p>
-          </div>
-
-          <div className="rounded-2xl bg-yellow-50 p-6 shadow-sm ring-1 ring-yellow-100">
-            <p className="text-3xl font-extrabold text-yellow-700">
-              {pendingEngagements}
-            </p>
-            <p className="mt-2 text-yellow-700">En attente</p>
-          </div>
-
-          <div className="rounded-2xl bg-green-50 p-6 shadow-sm ring-1 ring-green-100">
-            <p className="text-3xl font-extrabold text-green-700">
-              {approvedEngagements}
-            </p>
-            <p className="mt-2 text-green-700">Approuvés</p>
-          </div>
-
-          <div className="rounded-2xl bg-red-50 p-6 shadow-sm ring-1 ring-red-100">
-            <p className="text-3xl font-extrabold text-red-700">
-              {rejectedEngagements}
-            </p>
-            <p className="mt-2 text-red-700">Refusés</p>
-          </div>
-
-          <div className="rounded-2xl bg-indigo-600 p-6 text-white shadow-md shadow-indigo-200">
-            <p className="text-3xl font-extrabold">{totalRewards} €</p>
-            <p className="mt-2 text-indigo-100">Gains totaux</p>
-          </div>
-
-          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-            <p className="text-3xl font-extrabold text-slate-950">
-              {referralRewards} €
-            </p>
-            <p className="mt-2 text-slate-500">Commissions parrainage</p>
-          </div>
-        </div>
-
-        <div className="mt-10 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-2xl font-extrabold text-slate-950">
-                Mes engagements
-              </h2>
-
-              <p className="mt-2 text-slate-500">
-                Historique de vos engagements enregistrés.
-              </p>
-            </div>
-
-            <a
-              href="/lead"
-              className="rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white"
-            >
-              Nouvel engagement
-            </a>
-          </div>
-
-          <div className="space-y-4">
-            {engagements.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-slate-200 p-10 text-center text-slate-500">
-                Aucun engagement pour le moment.
-              </div>
-            ) : (
-              engagements.map((engagement) => (
-                <div
-                  key={engagement.id}
-                  className="rounded-2xl border border-slate-100 p-5 transition hover:border-indigo-200 hover:shadow-sm"
-                >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <h3 className="text-xl font-extrabold text-slate-950">
-                        {engagement.full_name}
-                      </h3>
-
-                      <p className="mt-1 text-slate-500">
-                        {engagement.email}
-                      </p>
-
-                      <p className="text-slate-500">
-                        {engagement.phone}
-                      </p>
-
-                      <p className="mt-3 font-bold text-indigo-600">
-                        {engagement.campaigns?.title ||
-                          engagement.campaign_title_snapshot ||
-                          "Campagne supprimée"}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-col items-start gap-3 md:items-end">
-                      <span
-                        className={`rounded-full px-4 py-2 text-sm font-bold ${
-                          engagement.status === "approved"
-                            ? "bg-green-100 text-green-700"
-                            : engagement.status === "rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {engagement.status === "pending"
-                          ? "En attente"
-                          : engagement.status === "approved"
-                          ? "Approuvé"
-                          : "Refusé"}
-                      </span>
-
-                      <p className="text-sm text-slate-400">
-                        {new Date(engagement.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
         </div>
       </div>
-    </main>
-  );
-}
+
+      <div className="mb-10 grid gap-5 md:grid-cols-2 xl:grid-cols-6">
+        <StatCard label="Total engagements" value={engagements.length} />
+        <StatCard label="En attente" value={pendingEngagements} tone="yellow" />
+        <StatCard label="Approuvés" value={approvedEngagements} tone="green" />
+        <StatCard label="Refusés" value={rejectedEngagements} tone="red" />
+        <StatCard label="Gains totaux" value={`${totalRewards} €`} tone="indigo" />
+        <StatCard label="Commissions" value={`${referralRewards} €`} />
+      </div>
+
+      <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-2xl font-extrabold text-slate-950">
+              Mes engagements
+            </h2>
+
+            <p className="mt-2 text-slate-500">
+              Historique de vos engagements enregistrés.
+            </p>
+          </div>
+
+          <a
+            href="/lead"
+            className="rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white"
+          >
+            Nouvel engagement
+          </a>
+        </div>
+
+        <div className="space-y-4">
+          {engagements.length === 0 ? (
+            <EmptyState message="Aucun engagement pour le moment." />
+          ) : (
+            engagements.map((engagement) => (
+              <div
+                key={engagement.id}
+                className="rounded-2xl border border-slate-100 p-5 transition hover:border-indigo-200 hover:shadow-sm"
+              >
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h3 className="text-xl font-extrabold text-slate-950">
+                      {engagement.full_name}
+                    </h3>
+
+                    <p className="mt-1 text-slate-500">{engagement.email}</p>
+                    <p className="text-slate-500">{engagement.phone}</p>
+
+                    <p className="mt-3 font-bold text-indigo-600">
+                      {engagement.campaigns?.title ||
+                        engagement.campaign_title_snapshot ||
+                        "Campagne supprimée"}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-start gap-3 md:items-end">
+                    <StatusBadge status={engagement.status} />
+
+                    <p className="text-sm text-slate-400">
+                      {new Date(engagement.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </PageShell>
+
+    <MobileBottomNav active="referrals" />
+  </>
+)
+};

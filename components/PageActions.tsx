@@ -4,9 +4,7 @@ type Props = {
   backHref?: string;
 };
 
-export default function PageActions({
-  backHref = "/",
-}: Props) {
+export default function PageActions({ backHref = "/" }: Props) {
   function goBack() {
     if (window.history.length > 1) {
       window.history.back();

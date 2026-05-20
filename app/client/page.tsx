@@ -1,5 +1,7 @@
 "use client";
 
+import MobileHeader from "@/components/mobile/MobileHeader";
+import MobileBottomNav from "@/components/mobile/MobileBottomNav";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -157,8 +159,11 @@ export default function ClientPage() {
     );
   }
 
-  return (
-    <main className="min-h-screen bg-[#F7F8FC] p-0 lg:p-3">
+ return (
+  <>
+    <MobileHeader title="Dashboard client" subtitle="UNION" />
+
+    <main className="min-h-screen bg-[#F7F8FC] p-0 pb-28 lg:p-3 lg:pb-3">
       <div className="mx-auto flex min-h-screen max-w-7xl overflow-hidden bg-[#F7F8FC] lg:min-h-[calc(100vh-24px)] lg:rounded-2xl lg:border lg:border-slate-200">
         <aside className="hidden w-64 shrink-0 flex-col justify-between border-r border-slate-200 bg-white p-6 lg:flex">
           <div>
@@ -228,28 +233,6 @@ export default function ClientPage() {
         </aside>
 
         <section className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 md:px-8 lg:px-12 lg:py-8">
-          <header className="mb-6 flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 lg:hidden">
-            <a href="/" className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white">
-                U
-              </div>
-
-              <div>
-                <p className="font-extrabold text-slate-950">UNION</p>
-                <p className="text-xs font-medium text-slate-400">
-                  Portail client
-                </p>
-              </div>
-            </a>
-
-            <a
-              href="/settings"
-              className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white"
-            >
-              Paramètres
-            </a>
-          </header>
-
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 md:text-4xl">
@@ -587,8 +570,11 @@ export default function ClientPage() {
                 })}
             </div>
           </div>
-        </section>
+                </section>
       </div>
     </main>
-  );
+
+    <MobileBottomNav active="dashboard" />
+  </>
+);
 }
