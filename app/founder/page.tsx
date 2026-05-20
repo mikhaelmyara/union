@@ -162,7 +162,7 @@ const [challengeEndDate, setChallengeEndDate] =
 
   async function handleLogout() {
     await supabase.auth.signOut();
-    window.location.href = "/login";
+    window.location.href = "/";
   }
 
 
