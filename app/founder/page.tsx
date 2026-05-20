@@ -483,14 +483,15 @@ const [statusAction, setStatusAction] =
             deleteChallenge={setChallengeToDelete}
           />
 
-          <div className="mb-10 grid gap-8 xl:grid-cols-2">
+          <div id="create-campaign" className="mb-10 grid gap-8 xl:grid-cols-2">
             <AnalyticsSection
               pending={pendingLeads}
               approved={approvedLeads}
               rejected={rejectedLeads}
             />
 
-            <CreateCampaignForm
+            <CreateCampaignForm 
+              
               title={title}
               description={description}
               rewardAmount={rewardAmount}
@@ -569,7 +570,12 @@ const [statusAction, setStatusAction] =
 />
       </div>
         </main>
-
+          <a
+            href="#create-campaign"
+            className="fixed bottom-24 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-3xl font-bold text-white shadow-2xl shadow-indigo-300 transition hover:scale-105 lg:hidden"
+          >
+            +
+          </a>
     <FounderMobileBottomNav active="dashboard" />
   </>
 );
