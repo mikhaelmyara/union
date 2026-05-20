@@ -49,7 +49,7 @@ export default function EngagementsPage() {
         .eq("client_id", user.id)
         .order("created_at", { ascending: false });
 
-            setEngagements((data as unknown as Engagement[]) ?? []);
+        setEngagements((data as unknown as Engagement[]) ?? []);
         setLoading(false);
     }
 

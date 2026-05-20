@@ -152,14 +152,14 @@ export default function ClientPage() {
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F7F8FC]">
-        <p>Chargement...</p>
+        <p className="font-semibold text-slate-500">Chargement...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F8FC] p-3">
-      <div className="mx-auto flex min-h-[calc(100vh-24px)] max-w-7xl overflow-hidden rounded-2xl border border-slate-200 bg-[#F7F8FC]">
+    <main className="min-h-screen bg-[#F7F8FC] p-0 lg:p-3">
+      <div className="mx-auto flex min-h-screen max-w-7xl overflow-hidden bg-[#F7F8FC] lg:min-h-[calc(100vh-24px)] lg:rounded-2xl lg:border lg:border-slate-200">
         <aside className="hidden w-64 shrink-0 flex-col justify-between border-r border-slate-200 bg-white p-6 lg:flex">
           <div>
             <a href="/" className="mb-12 flex items-center gap-3">
@@ -227,54 +227,84 @@ export default function ClientPage() {
           </div>
         </aside>
 
-        <section className="flex-1 overflow-y-auto px-5 py-8 md:px-10 lg:px-12">
+        <section className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 md:px-8 lg:px-12 lg:py-8">
+          <header className="mb-6 flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 lg:hidden">
+            <a href="/" className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white">
+                U
+              </div>
+
+              <div>
+                <p className="font-extrabold text-slate-950">UNION</p>
+                <p className="text-xs font-medium text-slate-400">
+                  Portail client
+                </p>
+              </div>
+            </a>
+
+            <a
+              href="/settings"
+              className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-bold text-white"
+            >
+              Paramètres
+            </a>
+          </header>
+
           <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 md:text-4xl">
-                Bon retour sur UNION 👋
+                Bon retour 👋
               </h1>
 
-              <p className="mt-2 text-lg text-slate-500">
+              <p className="mt-2 max-w-2xl text-base text-slate-500 md:text-lg">
                 Voici un résumé de ton activité de collecte d’engagements.
               </p>
             </div>
 
             <a
               href="/lead"
-              className="rounded-xl bg-indigo-600 px-5 py-3 text-center font-bold text-white shadow-md shadow-indigo-200"
+              className="w-full rounded-xl bg-indigo-600 px-5 py-3 text-center font-bold text-white shadow-md shadow-indigo-200 transition hover:opacity-90 md:w-auto"
             >
               + Nouvel engagement
             </a>
           </div>
 
-          <div className="mb-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+          <div className="mb-8 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 md:p-6">
             <p className="text-sm font-medium text-slate-500">
               Mon code de parrainage
             </p>
 
-            <p className="mt-2 text-4xl font-extrabold tracking-tight text-indigo-600">
-              {referralCode}
-            </p>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="break-all text-3xl font-extrabold tracking-tight text-indigo-600 md:text-4xl">
+                {referralCode}
+              </p>
 
-            <p className="mt-2 text-sm text-slate-500">
-              Partage ce code pour inviter de nouveaux utilisateurs sur la
-              plateforme.
+              <a
+                href="/signup"
+                className="rounded-xl bg-indigo-50 px-4 py-2 text-center text-sm font-bold text-indigo-600"
+              >
+                Inviter
+              </a>
+            </div>
+
+            <p className="mt-3 text-sm text-slate-500">
+              Partage ce code pour inviter de nouveaux utilisateurs sur la plateforme.
             </p>
           </div>
 
           {activeChallenge && (
-            <div className="mb-8 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 p-6 text-white shadow-xl shadow-indigo-200">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="mb-8 overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 p-5 text-white shadow-xl shadow-indigo-200 md:p-6">
+              <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
                 <div>
                   <p className="text-sm font-bold uppercase tracking-wide text-indigo-100">
                     Challenge actif
                   </p>
 
-                  <h2 className="mt-2 text-3xl font-extrabold">
+                  <h2 className="mt-2 text-2xl font-extrabold md:text-3xl">
                     {activeChallenge.title}
                   </h2>
 
-                  <p className="mt-3 max-w-2xl text-indigo-100">
+                  <p className="mt-3 max-w-2xl text-sm text-indigo-100 md:text-base">
                     {activeChallenge.description}
                   </p>
 
@@ -303,51 +333,61 @@ export default function ClientPage() {
             </div>
           )}
 
-          <div className="mb-10 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-5">
-            <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-              <p className="text-3xl font-extrabold text-slate-950">
+          <div className="mb-10 grid grid-cols-2 gap-4 xl:grid-cols-5">
+            <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
+              <p className="text-2xl font-extrabold text-slate-950 md:text-3xl">
                 {engagements.length}
               </p>
-              <p className="mt-2 font-medium text-slate-500">
-                Total engagements
+              <p className="mt-2 text-sm font-medium text-slate-500 md:text-base">
+                Engagements
               </p>
             </div>
 
-            <div className="rounded-2xl bg-yellow-50 p-6 shadow-sm ring-1 ring-yellow-100">
-              <p className="text-3xl font-extrabold text-yellow-700">
+            <div className="rounded-2xl bg-yellow-50 p-5 shadow-sm ring-1 ring-yellow-100">
+              <p className="text-2xl font-extrabold text-yellow-700 md:text-3xl">
                 {pendingEngagements}
               </p>
-              <p className="mt-2 font-medium text-yellow-700">En attente</p>
+              <p className="mt-2 text-sm font-medium text-yellow-700 md:text-base">
+                En attente
+              </p>
             </div>
 
-            <div className="rounded-2xl bg-green-50 p-6 shadow-sm ring-1 ring-green-100">
-              <p className="text-3xl font-extrabold text-green-700">
+            <div className="rounded-2xl bg-green-50 p-5 shadow-sm ring-1 ring-green-100">
+              <p className="text-2xl font-extrabold text-green-700 md:text-3xl">
                 {approvedEngagements}
               </p>
-              <p className="mt-2 font-medium text-green-700">Approuvés</p>
+              <p className="mt-2 text-sm font-medium text-green-700 md:text-base">
+                Approuvés
+              </p>
             </div>
 
-            <div className="rounded-2xl bg-red-50 p-6 shadow-sm ring-1 ring-red-100">
-              <p className="text-3xl font-extrabold text-red-700">
+            <div className="rounded-2xl bg-red-50 p-5 shadow-sm ring-1 ring-red-100">
+              <p className="text-2xl font-extrabold text-red-700 md:text-3xl">
                 {rejectedEngagements}
               </p>
-              <p className="mt-2 font-medium text-red-700">Refusés</p>
+              <p className="mt-2 text-sm font-medium text-red-700 md:text-base">
+                Refusés
+              </p>
             </div>
 
-            <div className="rounded-2xl bg-indigo-600 p-6 text-white shadow-md shadow-indigo-200">
-              <p className="text-3xl font-extrabold">{totalRewards} €</p>
-              <p className="mt-2 font-medium text-indigo-100">Gains totaux</p>
+            <div className="col-span-2 rounded-2xl bg-indigo-600 p-5 text-white shadow-md shadow-indigo-200 xl:col-span-1">
+              <p className="text-2xl font-extrabold md:text-3xl">
+                {totalRewards} €
+              </p>
+              <p className="mt-2 text-sm font-medium text-indigo-100 md:text-base">
+                Gains totaux
+              </p>
             </div>
           </div>
 
           <div className="grid gap-8 xl:grid-cols-2">
             <section>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-2xl font-extrabold text-slate-950">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-xl font-extrabold text-slate-950 md:text-2xl">
                   Campagnes actives
                 </h2>
 
-                <a href="/campaigns" className="font-bold text-indigo-600">
+                <a href="/campaigns" className="text-sm font-bold text-indigo-600 md:text-base">
                   Voir tout →
                 </a>
               </div>
@@ -357,7 +397,7 @@ export default function ClientPage() {
                   <a
                     key={campaign.id}
                     href={`/lead?campaign=${campaign.id}`}
-                    className="block rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:shadow-md"
+                    className="block rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:shadow-md md:p-6"
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div>
@@ -365,11 +405,11 @@ export default function ClientPage() {
                           {campaign.title}
                         </h3>
 
-                        <p className="mt-1 line-clamp-2 text-slate-500">
+                        <p className="mt-1 line-clamp-2 text-sm text-slate-500 md:text-base">
                           {campaign.description}
                         </p>
 
-                        <p className="mt-3 font-extrabold text-indigo-600">
+                        <p className="mt-3 text-sm font-extrabold text-indigo-600 md:text-base">
                           Engagement approuvé = {campaign.reward_amount} €
                         </p>
                       </div>
@@ -382,12 +422,12 @@ export default function ClientPage() {
             </section>
 
             <section>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-2xl font-extrabold text-slate-950">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-xl font-extrabold text-slate-950 md:text-2xl">
                   Mes engagements récents
                 </h2>
 
-                <a href="/leads" className="font-bold text-indigo-600">
+                <a href="/leads" className="text-sm font-bold text-indigo-600 md:text-base">
                   Voir tout →
                 </a>
               </div>
@@ -401,9 +441,9 @@ export default function ClientPage() {
                   engagements.slice(0, 5).map((engagement) => (
                     <div
                       key={engagement.id}
-                      className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100"
+                      className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 md:p-6"
                     >
-                      <div className="flex items-center justify-between gap-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <h3 className="font-extrabold text-slate-950">
                             {engagement.full_name}
@@ -415,7 +455,7 @@ export default function ClientPage() {
                         </div>
 
                         <span
-                          className={`rounded-full px-3 py-1 text-sm font-bold ${
+                          className={`w-fit rounded-full px-3 py-1 text-sm font-bold ${
                             engagement.status === "approved"
                               ? "bg-green-100 text-green-700"
                               : engagement.status === "rejected"
@@ -437,13 +477,13 @@ export default function ClientPage() {
             </section>
           </div>
 
-          <div className="mt-10 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+          <div className="mt-10 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 md:p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-extrabold text-slate-950">
+              <h2 className="text-xl font-extrabold text-slate-950 md:text-2xl">
                 Top performers 🏆
               </h2>
 
-              <p className="mt-2 text-slate-500">
+              <p className="mt-2 text-sm text-slate-500 md:text-base">
                 Les meilleurs utilisateurs de la plateforme.
               </p>
 
@@ -453,13 +493,15 @@ export default function ClientPage() {
                     Votre classement
                   </p>
 
-                  <div className="mt-2 flex items-center justify-between">
+                  <div className="mt-2 flex items-center justify-between gap-4">
                     <div>
                       <p className="text-3xl font-extrabold text-slate-950">
                         #{currentUserRank}
                       </p>
 
-                      <p className="text-slate-500">Classement actuel</p>
+                      <p className="text-sm text-slate-500">
+                        Classement actuel
+                      </p>
                     </div>
 
                     <div className="text-right">
@@ -467,14 +509,14 @@ export default function ClientPage() {
                         {currentUserLeaderboardData?.total_rewards ?? 0} €
                       </p>
 
-                      <p className="text-slate-500">Gains cumulés</p>
+                      <p className="text-sm text-slate-500">Gains cumulés</p>
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="mb-6 flex gap-3">
+            <div className="mb-6 flex flex-wrap gap-3">
               <button
                 onClick={() => setLeaderboardPeriod("week")}
                 className={`rounded-xl px-4 py-2 font-bold ${
@@ -501,10 +543,7 @@ export default function ClientPage() {
             <div className="space-y-4">
               {leaderboard
                 .filter((user, index) => {
-                  if (leaderboardPeriod === "week") {
-                    return index < 3;
-                  }
-
+                  if (leaderboardPeriod === "week") return index < 3;
                   return true;
                 })
                 .map((user, index) => {
@@ -518,10 +557,10 @@ export default function ClientPage() {
                   return (
                     <div
                       key={user.user_id}
-                      className="flex items-center justify-between rounded-2xl border border-slate-100 p-5"
+                      className="flex items-center justify-between rounded-2xl border border-slate-100 p-4 md:p-5"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 font-extrabold text-indigo-600">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-100 font-extrabold text-indigo-600 md:h-12 md:w-12">
                           #{index + 1}
                         </div>
 
@@ -537,7 +576,7 @@ export default function ClientPage() {
                       </div>
 
                       <div className="text-right">
-                        <p className="text-2xl font-extrabold text-indigo-600">
+                        <p className="text-xl font-extrabold text-indigo-600 md:text-2xl">
                           {user.total_rewards} €
                         </p>
 
