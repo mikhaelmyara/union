@@ -84,6 +84,50 @@ export default function EngagementsPage() {
   return (
     <main className="min-h-screen bg-[#F7F8FC] p-6">
       <div className="mx-auto max-w-6xl">
+            <div className="mb-8 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <a href="/" className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 font-bold text-white">
+                    U
+                  </div>
+
+                  <div>
+                    <p className="font-extrabold text-slate-950">UNION</p>
+                    <p className="text-sm text-slate-400">Portail client</p>
+                  </div>
+                </a>
+
+                <nav className="flex flex-wrap gap-2">
+                  <a
+                    href="/client"
+                    className="rounded-xl px-4 py-2 font-bold text-slate-500 hover:bg-slate-50"
+                  >
+                    Dashboard
+                  </a>
+
+                  <a
+                    href="/campaigns"
+                    className="rounded-xl bg-indigo-600 px-4 py-2 font-bold text-white"
+                  >
+                    Campagnes
+                  </a>
+
+                  <a
+                    href="/leads"
+                    className="rounded-xl bg-indigo-600 px-4 py-2 font-bold text-white"
+                  >
+                    Engagements
+                  </a>
+
+                  <a
+                    href="/settings"
+                    className="rounded-xl bg-indigo-600 px-4 py-2 font-bold text-white  "
+                  >
+                    Paramètres
+                  </a>
+                </nav>
+              </div>
+            </div>
         <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="font-bold text-indigo-600">
