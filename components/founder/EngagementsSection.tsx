@@ -9,130 +9,132 @@ type Props = {
   updateStatus: (leadId: string, status: EngagementStatus) => void;
 };
 
-export default function EngagementsSection({
-  leads,
-  search,
-  statusFilter,
-  setSearch,
-  setStatusFilter,
-  updateStatus,
-}: Props) {
-  const filteredLeads = leads.filter((lead) => {
-    const campaignName =
-      lead.campaigns?.title ||
-      lead.campaign_title_snapshot ||
-      "Campagne supprimée";
+const statusStyle: Record<string, string> = {
+  approved: "bg-green-100 text-green-700",
+  rejected:  "bg-red-100 text-red-700",
+  pending:   "bg-yellow-100 text-yellow-700",
+};
+const statusLabel: Record<string, string> = {
+  approved: "Approuvé",
+  rejected:  "Refusé",
+  pending:   "En attente",
+};
 
-    const matchesSearch = `${lead.full_name} ${lead.email} ${lead.phone} ${campaignName}`
-      .toLowerCase()
-      .includes(search.toLowerCase());
-
-    const matchesStatus = statusFilter === "all" || lead.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+export default function EngagementsSection({ leads, search, statusFilter, setSearch, setStatusFilter, updateStatus }: Props) {
+  const filtered = leads.filter((lead) => {
+    const campaign = lead.campaigns?.title || lead.campaign_title_snapshot || "";
+    const matchSearch = `${lead.full_name} ${lead.email} ${lead.phone ?? ""} ${campaign}`.toLowerCase().includes(search.toLowerCase());
+    const matchStatus = statusFilter === "all" || lead.status === statusFilter;
+    return matchSearch && matchStatus;
   });
 
-  return (
-    <section id="engagements">
-      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h2 className="text-2xl font-extrabold text-slate-950">Engagements</h2>
+  const preview = filtered.slice(0, 3);
+  const hasMore = filtered.length > 3;
 
+  return (
+    <section id="engagements" className="mb-10">
+      {/* Header */}
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-extrabold text-slate-950">Derniers engagements</h2>
+          <p className="mt-1 text-sm text-slate-400">{filtered.length} engagement{filtered.length !== 1 ? "s" : ""} au total</p>
+        </div>
         <a
           href="/founder/engagements"
-          className="rounded-xl bg-indigo-600 px-4 py-2 text-center font-bold text-white"
+          className="flex items-center gap-1.5 rounded-xl bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-600 transition hover:bg-indigo-100"
         >
-          Voir tous les détails
+          Voir tout →
         </a>
       </div>
 
-      <div className="mb-6">
-        <input
-          className="w-full rounded-2xl border border-slate-200 bg-white p-4 outline-none focus:border-indigo-600"
-          placeholder="Rechercher un engagement..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
-      <div className="mb-6 flex flex-wrap gap-3">
+      {/* Filtres */}
+      <div className="mb-4 flex flex-wrap gap-2">
         {[
           { label: "Tous", value: "all" },
           { label: "En attente", value: "pending" },
           { label: "Approuvés", value: "approved" },
           { label: "Refusés", value: "rejected" },
-        ].map((filter) => (
+        ].map((f) => (
           <button
-            key={filter.value}
-            onClick={() => setStatusFilter(filter.value)}
-            className={`rounded-xl px-4 py-2 font-bold ${
-              statusFilter === filter.value
-                ? "bg-indigo-600 text-white"
-                : "bg-white text-slate-600 ring-1 ring-slate-200"
+            key={f.value}
+            onClick={() => setStatusFilter(f.value)}
+            className={`rounded-xl px-3 py-1.5 text-sm font-bold transition ${
+              statusFilter === f.value ? "bg-indigo-600 text-white" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
             }`}
           >
-            {filter.label}
+            {f.label}
           </button>
         ))}
+        <input
+          className="ml-auto w-full rounded-xl border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-indigo-500 sm:w-56"
+          placeholder="Rechercher..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
 
-      <div className="space-y-4">
-        {filteredLeads.map((lead) => (
-          <div key={lead.id} className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-            <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-              <div>
-                <h3 className="text-lg font-extrabold text-slate-950">{lead.full_name}</h3>
+      {/* Liste — 3 max */}
+      <div className="space-y-3">
+        {preview.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-slate-400">
+            Aucun engagement trouvé.
+          </div>
+        ) : (
+          preview.map((lead) => (
+            <div key={lead.id} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 transition hover:shadow-md">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-extrabold text-slate-950">{lead.full_name}</h3>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${statusStyle[lead.status]}`}>
+                      {statusLabel[lead.status]}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-sm text-slate-500">{lead.email}{lead.phone ? ` · ${lead.phone}` : ""}</p>
+                  <p className="mt-0.5 text-sm font-bold text-indigo-600">
+                    {lead.campaigns?.title || lead.campaign_title_snapshot || "Campagne supprimée"}
+                    {lead.campaigns?.reward_amount ? ` · ${lead.campaigns.reward_amount} €` : ""}
+                  </p>
+                </div>
 
-                <p className="text-sm font-medium text-slate-400">{lead.email}</p>
-
-                <p className="text-sm text-slate-500">Téléphone : {lead.phone}</p>
-
-                <p className="text-sm text-slate-500">
-                  Campagne : {lead.campaigns?.title || lead.campaign_title_snapshot || "Campagne supprimée"}
-                </p>
-              </div>
-
-              <div className="flex flex-col items-start gap-3 md:items-end">
-                <span
-                  className={`rounded-full px-3 py-1 text-sm font-bold ${
-                    lead.status === "approved"
-                      ? "bg-green-100 text-green-700"
-                      : lead.status === "rejected"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {lead.status === "pending" ? "En attente" : lead.status === "approved" ? "Approuvé" : "Refusé"}
-                </span>
-
-                <p className="font-extrabold text-indigo-600">{lead.campaigns?.reward_amount ?? 0} €</p>
-
-                <div className="flex flex-wrap gap-2">
+                <div className="flex shrink-0 flex-wrap gap-2">
                   <button
                     onClick={() => updateStatus(lead.id, "approved")}
-                    className="rounded-xl bg-green-600 px-4 py-2 font-bold text-white"
+                    disabled={lead.status === "approved"}
+                    className="rounded-xl bg-green-600 px-3 py-1.5 text-sm font-bold text-white transition hover:bg-green-700 disabled:opacity-40"
                   >
-                    Approuver
+                    ✓
                   </button>
-
                   <button
                     onClick={() => updateStatus(lead.id, "pending")}
-                    className="rounded-xl bg-yellow-500 px-4 py-2 font-bold text-white"
+                    disabled={lead.status === "pending"}
+                    className="rounded-xl bg-yellow-500 px-3 py-1.5 text-sm font-bold text-white transition hover:bg-yellow-600 disabled:opacity-40"
                   >
-                    En attente
+                    ↩
                   </button>
-
                   <button
                     onClick={() => updateStatus(lead.id, "rejected")}
-                    className="rounded-xl bg-red-600 px-4 py-2 font-bold text-white"
+                    disabled={lead.status === "rejected"}
+                    className="rounded-xl bg-red-600 px-3 py-1.5 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-40"
                   >
-                    Refuser
+                    ✕
                   </button>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
+
+      {/* Voir plus */}
+      {hasMore && (
+        <a
+          href="/founder/engagements"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-indigo-200 bg-indigo-50 py-3 text-sm font-bold text-indigo-600 transition hover:bg-indigo-100"
+        >
+          Voir les {filtered.length - 3} autres engagements →
+        </a>
+      )}
     </section>
   );
 }

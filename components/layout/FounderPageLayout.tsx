@@ -6,7 +6,7 @@ import MobileHeader from "@/components/mobile/MobileHeader";
 import FounderMobileBottomNav from "@/components/mobile/FounderMobileBottomNav";
 import NotificationBell from "@/components/ui/NotificationBell";
 
-type Active = "dashboard" | "engagements" | "partner" | "home";
+type Active = "dashboard" | "campaigns" | "engagements" | "partner" | "home";
 
 type Props = {
   active: Active;
@@ -17,9 +17,10 @@ type Props = {
 };
 
 const navItems = [
-  { href: "/founder",              label: "Dashboard",       key: "dashboard" },
-  { href: "/founder/engagements",  label: "Engagements",     key: "engagements" },
-  { href: "/partner",              label: "Vue partenaire",  key: "partner" },
+  { href: "/founder",             label: "Dashboard",      key: "dashboard" },
+  { href: "/founder/campaigns",   label: "Campagnes",      key: "campaigns" },
+  { href: "/founder/engagements", label: "Engagements",    key: "engagements" },
+  { href: "/partner",             label: "Vue partenaire", key: "partner" },
 ] as const;
 
 export default function FounderPageLayout({ active, title, description, children, actions }: Props) {
@@ -41,7 +42,6 @@ export default function FounderPageLayout({ active, title, description, children
       <main className="min-h-screen bg-[#F7F8FC] p-0 pb-28 lg:p-3 lg:pb-3">
         <div className="mx-auto flex min-h-screen max-w-7xl overflow-hidden bg-[#F7F8FC] lg:min-h-[calc(100vh-24px)] lg:rounded-2xl lg:border lg:border-slate-200">
 
-          {/* Sidebar desktop */}
           <aside className="hidden w-64 shrink-0 flex-col justify-between border-r border-slate-200 bg-white p-6 lg:flex">
             <div>
               <a href="/" className="mb-10 flex items-center gap-3">
@@ -82,7 +82,6 @@ export default function FounderPageLayout({ active, title, description, children
             </div>
           </aside>
 
-          {/* Content */}
           <section className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 md:px-8 lg:px-12 lg:py-8">
             <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>

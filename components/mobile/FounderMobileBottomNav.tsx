@@ -1,6 +1,6 @@
 "use client";
 
-type Active = "dashboard" | "engagements" | "partner" | "home";
+type Active = "dashboard" | "campaigns" | "engagements" | "partner" | "home";
 
 export default function FounderMobileBottomNav({ active }: { active: Active }) {
   const items = [
@@ -8,6 +8,7 @@ export default function FounderMobileBottomNav({ active }: { active: Active }) {
     { label: "Engag.",      href: "/founder/engagements", key: "engagements" },
     { label: "Partenaire",  href: "/partner",             key: "partner" },
     { label: "Accueil",     href: "/",                    key: "home" },
+    { label: "Campagnes", href: "/founder/campaigns", key: "campaigns" },  
   ] as const;
 
   return (

@@ -18,21 +18,18 @@ type Props = {
 };
 
 const navItems = [
-  { href: "/client",        label: "Tableau de bord", key: "dashboard" },
-  { href: "/campaigns",     label: "Campagnes",        key: "campaigns" },
-  { href: "/leads",         label: "Mes engagements",  key: "engagements" },
-  { href: "/referrals",     label: "Parrainages",      key: "referrals" },
-  { href: "/notifications", label: "Notifications",    key: "notifications" },
-  { href: "/settings",      label: "Paramètres",       key: "settings" },
+  { href: "/client",    label: "Tableau de bord", key: "dashboard" },
+  { href: "/campaigns", label: "Campagnes",        key: "campaigns" },
+  { href: "/leads",     label: "Mes engagements",  key: "engagements" },
+  { href: "/referrals", label: "Parrainages",      key: "referrals" },
+  { href: "/settings",  label: "Paramètres",       key: "settings" },
 ] as const;
 
 export default function ClientPageLayout({ active, eyebrow, title, description, children, actions }: Props) {
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setEmail(user?.email ?? "");
-    });
+    supabase.auth.getUser().then(({ data: { user } }) => setEmail(user?.email ?? ""));
   }, []);
 
   async function handleLogout() {
@@ -47,7 +44,6 @@ export default function ClientPageLayout({ active, eyebrow, title, description, 
       <main className="min-h-screen bg-[#F7F8FC] p-0 pb-28 lg:p-3 lg:pb-3">
         <div className="mx-auto flex min-h-screen max-w-7xl overflow-hidden bg-[#F7F8FC] lg:min-h-[calc(100vh-24px)] lg:rounded-2xl lg:border lg:border-slate-200">
 
-          {/* Sidebar desktop */}
           <aside className="hidden w-64 shrink-0 flex-col justify-between border-r border-slate-200 bg-white p-6 lg:flex">
             <div>
               <a href="/" className="mb-10 flex items-center gap-3">
@@ -57,7 +53,6 @@ export default function ClientPageLayout({ active, eyebrow, title, description, 
                   <p className="text-sm text-slate-400">Portail client</p>
                 </div>
               </a>
-
               <nav className="space-y-1">
                 {navItems.map((item) => (
                   <a
@@ -89,7 +84,6 @@ export default function ClientPageLayout({ active, eyebrow, title, description, 
             </div>
           </aside>
 
-          {/* Content */}
           <section className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 md:px-8 lg:px-12 lg:py-8">
             <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
