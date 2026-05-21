@@ -33,6 +33,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-full bg-slate-50">
         {children}
         <Toaster richColors position="top-right" />
+        <script dangerouslySetInnerHTML={{
+          __html: `if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')`
+        }} />
       </body>
     </html>
   );
