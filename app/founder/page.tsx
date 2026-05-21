@@ -1,4 +1,5 @@
 "use client";
+import { exportLeadsToExcel } from "@/lib/exportLeads";
 import MobileHeader from "@/components/mobile/MobileHeader";
 import FounderMobileBottomNav from "@/components/mobile/FounderMobileBottomNav";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -181,22 +182,6 @@ export default function FounderPage() {
     setStatusAction(null);
   }
 
-  function exportLeadsToExcel() {
-    const data = leads.map((lead) => ({
-      Nom: lead.full_name,
-      Email: lead.email,
-      Téléphone: lead.phone,
-      Statut: lead.status,
-      Campagne: lead.campaigns?.title || lead.campaign_title_snapshot || "Campagne supprimée",
-      Récompense: lead.campaigns?.reward_amount ?? 0,
-      "Récompense parrain": lead.campaigns?.referral_reward_amount ?? 0,
-    }));
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Engagements");
-    XLSX.writeFile(wb, "union-engagements.xlsx");
-  }
-
   const pendingLeads = leads.filter((l) => l.status === "pending").length;
   const approvedLeads = leads.filter((l) => l.status === "approved").length;
   const rejectedLeads = leads.filter((l) => l.status === "rejected").length;
@@ -259,7 +244,7 @@ export default function FounderPage() {
                 <h1 className="text-3xl font-extrabold tracking-tight text-slate-950 md:text-4xl">Dashboard fondateur 🚀</h1>
                 <p className="mt-2 text-lg text-slate-500">Gère les campagnes, les engagements et les récompenses.</p>
               </div>
-              <button onClick={exportLeadsToExcel} className="rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-700">
+              <button onClick={() => exportLeadsToExcel().catch(e => toast.error(e.message))}>
                 Télécharger Excel
               </button>
             </div>

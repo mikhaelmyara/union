@@ -57,24 +57,12 @@ export default function FounderEngagementsPage() {
     setLoading(false);
   }
 
+  // Le trigger Supabase gère les notifications et rewards automatiquement
+  // On met juste à jour le statut ici
   async function updateStatus(id: string, status: "approved" | "rejected" | "pending") {
     const { error } = await supabase.from("leads").update({ status }).eq("id", id);
     if (error) { toast.error(error.message); return; }
-
-    const eng = engagements.find((e) => e.id === id);
-    if (eng?.client_id && status !== "pending") {
-      await supabase.from("notifications").insert({
-        user_id: eng.client_id,
-        title: status === "approved" ? "Engagement approuvé 🎉" : "Engagement refusé",
-        description: status === "approved"
-          ? "Un de vos engagements vient d'être approuvé. La récompense a été calculée."
-          : "Un de vos engagements a été refusé. Contactez le fondateur pour plus d'informations.",
-        type: status === "approved" ? "success" : "warning",
-      });
-    }
-
     toast.success("Statut mis à jour.");
-    // Update local state directly (no full reload)
     setEngagements((prev) => prev.map((e) => e.id === id ? { ...e, status } : e));
   }
 
@@ -96,12 +84,7 @@ export default function FounderEngagementsPage() {
   };
 
   return (
-    <FounderPageLayout
-      active="engagements"
-      title="Tous les engagements"
-      description="Vue complète avec client responsable, campagne et statut."
-    >
-      {/* Filtres */}
+    <FounderPageLayout active="engagements" title="Tous les engagements" description="Vue complète avec client, campagne et statut.">
       <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
         <input
           className="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
@@ -116,9 +99,7 @@ export default function FounderEngagementsPage() {
             { label: `Approuvés (${counts.approved})`, value: "approved" },
             { label: `Refusés (${counts.rejected})`, value: "rejected" },
           ]).map((f) => (
-            <button
-              key={f.value}
-              onClick={() => { setStatusFilter(f.value); setPage(0); }}
+            <button key={f.value} onClick={() => { setStatusFilter(f.value); setPage(0); }}
               className={`rounded-xl px-4 py-2 text-sm font-bold transition ${statusFilter === f.value ? "bg-indigo-600 text-white" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"}`}
             >
               {f.label}
@@ -127,7 +108,6 @@ export default function FounderEngagementsPage() {
         </div>
       </div>
 
-      {/* Liste */}
       {loading ? (
         <ListSkeleton rows={6} />
       ) : paginated.length === 0 ? (
@@ -140,7 +120,7 @@ export default function FounderEngagementsPage() {
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-lg font-extrabold text-slate-950">{e.full_name}</h3>
+                      <h3 className="font-extrabold text-slate-950">{e.full_name}</h3>
                       <StatusBadge status={e.status} />
                     </div>
                     <p className="mt-1 text-sm text-slate-500">{e.email}{e.phone ? ` · ${e.phone}` : ""}</p>
@@ -148,37 +128,30 @@ export default function FounderEngagementsPage() {
                       <p className="mt-1 text-sm font-bold text-indigo-600">Client : {e.profiles.full_name}</p>
                     )}
                     <p className="mt-0.5 text-sm text-slate-500">
-                      Campagne : {e.campaigns?.title || e.campaign_title_snapshot || "Campagne supprimée"}
+                      {e.campaigns?.title || e.campaign_title_snapshot || "Campagne supprimée"}
+                      {e.campaigns?.reward_amount ? ` · ${e.campaigns.reward_amount} €` : ""}
                     </p>
-                    <div className="mt-1 flex items-center gap-3">
-                      <span className="text-sm font-bold text-emerald-600">{e.campaigns?.reward_amount ?? 0} €</span>
-                      <span className="text-xs text-slate-400">
-                        {new Date(e.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
-                      </span>
-                    </div>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {new Date(e.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 md:flex-col md:items-end">
-                    <button
-                      onClick={() => updateStatus(e.id, "approved")}
-                      disabled={e.status === "approved"}
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={() => updateStatus(e.id, "approved")} disabled={e.status === "approved"}
                       className="rounded-xl bg-green-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       ✓ Approuver
                     </button>
-                    <button
-                      onClick={() => updateStatus(e.id, "rejected")}
-                      disabled={e.status === "rejected"}
+                    <button onClick={() => updateStatus(e.id, "rejected")} disabled={e.status === "rejected"}
                       className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       ✕ Refuser
                     </button>
                     {e.status !== "pending" && (
-                      <button
-                        onClick={() => updateStatus(e.id, "pending")}
+                      <button onClick={() => updateStatus(e.id, "pending")}
                         className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-300"
                       >
-                        ↩ Remettre en attente
+                        ↩ En attente
                       </button>
                     )}
                   </div>
@@ -189,9 +162,7 @@ export default function FounderEngagementsPage() {
 
           {totalPages > 1 && (
             <div className="mt-6 flex items-center justify-center gap-3">
-              <button
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                disabled={page === 0}
+              <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}
                 className="rounded-xl bg-white px-4 py-2 font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-40"
               >
                 ← Précédent
@@ -199,9 +170,7 @@ export default function FounderEngagementsPage() {
               <span className="text-sm font-bold text-slate-500">
                 Page {page + 1} / {totalPages} · {filtered.length} engagements
               </span>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                disabled={page >= totalPages - 1}
+              <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
                 className="rounded-xl bg-white px-4 py-2 font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-40"
               >
                 Suivant →
@@ -213,4 +182,3 @@ export default function FounderEngagementsPage() {
     </FounderPageLayout>
   );
 }
-
