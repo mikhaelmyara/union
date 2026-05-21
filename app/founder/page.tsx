@@ -8,7 +8,6 @@ import { PageSkeleton } from "@/components/ui/Skeleton";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import * as XLSX from "xlsx";
 import AnalyticsSection from "@/components/founder/AnalyticsSection";
 import CampaignsSection from "@/components/founder/CampaignsSection";
 import ChallengesSection from "@/components/founder/ChallengesSection";

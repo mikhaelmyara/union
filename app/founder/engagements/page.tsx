@@ -7,6 +7,7 @@ import FounderPageLayout from "@/components/layout/FounderPageLayout";
 import StatusBadge from "@/components/ui/StatusBadge";
 import EmptyState from "@/components/ui/EmptyState";
 import { ListSkeleton } from "@/components/ui/Skeleton";
+import { useTranslations } from "next-intl";
 
 type Engagement = {
   id: string;
@@ -24,6 +25,8 @@ type Engagement = {
 const PAGE_SIZE = 15;
 
 export default function FounderEngagementsPage() {
+  const t = useTranslations("founder");
+  const tc = useTranslations("common");
   const [loading, setLoading] = useState(true);
   const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [search, setSearch] = useState("");
@@ -35,7 +38,6 @@ export default function FounderEngagementsPage() {
   async function load() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/login"; return; }
-
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
     if (profile?.role !== "founder") { window.location.href = "/client"; return; }
 
@@ -57,8 +59,6 @@ export default function FounderEngagementsPage() {
     setLoading(false);
   }
 
-  // Le trigger Supabase gère les notifications et rewards automatiquement
-  // On met juste à jour le statut ici
   async function updateStatus(id: string, status: "approved" | "rejected" | "pending") {
     const { error } = await supabase.from("leads").update({ status }).eq("id", id);
     if (error) { toast.error(error.message); return; }
@@ -84,23 +84,23 @@ export default function FounderEngagementsPage() {
   };
 
   return (
-    <FounderPageLayout active="engagements" title="Tous les engagements" description="Vue complète avec client, campagne et statut.">
-      <div className="mb-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
+    <FounderPageLayout active="engagements" title={t("engagementsTitle")} description={t("engagementsSub")}>
+      <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800">
         <input
-          className="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-          placeholder="Rechercher par nom, email, campagne, client..."
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-950 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500"
+          placeholder={tc("search")}
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(0); }}
         />
         <div className="mt-4 flex flex-wrap gap-2">
           {([
-            { label: `Tous (${counts.all})`, value: "all" },
-            { label: `En attente (${counts.pending})`, value: "pending" },
-            { label: `Approuvés (${counts.approved})`, value: "approved" },
-            { label: `Refusés (${counts.rejected})`, value: "rejected" },
+            { label: `${tc("all")} (${counts.all})`, value: "all" },
+            { label: `${tc("pending")} (${counts.pending})`, value: "pending" },
+            { label: `${tc("approved")} (${counts.approved})`, value: "approved" },
+            { label: `${tc("rejected")} (${counts.rejected})`, value: "rejected" },
           ]).map((f) => (
             <button key={f.value} onClick={() => { setStatusFilter(f.value); setPage(0); }}
-              className={`rounded-xl px-4 py-2 text-sm font-bold transition ${statusFilter === f.value ? "bg-indigo-600 text-white" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"}`}
+              className={`rounded-xl px-4 py-2 text-sm font-bold transition ${statusFilter === f.value ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
             >
               {f.label}
             </button>
@@ -108,50 +108,47 @@ export default function FounderEngagementsPage() {
         </div>
       </div>
 
-      {loading ? (
-        <ListSkeleton rows={6} />
-      ) : paginated.length === 0 ? (
+      {loading ? <ListSkeleton rows={6} /> : paginated.length === 0 ? (
         <EmptyState message="Aucun engagement trouvé." />
       ) : (
         <>
           <div className="space-y-4">
             {paginated.map((e) => (
-              <div key={e.id} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100 transition hover:shadow-md">
+              <div key={e.id} className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800 transition hover:shadow-md">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-extrabold text-slate-950">{e.full_name}</h3>
+                      <h3 className="font-extrabold text-slate-950 dark:text-white">{e.full_name}</h3>
                       <StatusBadge status={e.status} />
                     </div>
-                    <p className="mt-1 text-sm text-slate-500">{e.email}{e.phone ? ` · ${e.phone}` : ""}</p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{e.email}{e.phone ? ` · ${e.phone}` : ""}</p>
                     {e.profiles?.full_name && (
-                      <p className="mt-1 text-sm font-bold text-indigo-600">Client : {e.profiles.full_name}</p>
+                      <p className="mt-1 text-sm font-bold text-indigo-600 dark:text-indigo-400">{t("client")} : {e.profiles.full_name}</p>
                     )}
-                    <p className="mt-0.5 text-sm text-slate-500">
+                    <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
                       {e.campaigns?.title || e.campaign_title_snapshot || "Campagne supprimée"}
                       {e.campaigns?.reward_amount ? ` · ${e.campaigns.reward_amount} €` : ""}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
                       {new Date(e.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
                     </p>
                   </div>
-
                   <div className="flex flex-wrap gap-2">
                     <button onClick={() => updateStatus(e.id, "approved")} disabled={e.status === "approved"}
                       className="rounded-xl bg-green-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      ✓ Approuver
+                      {t("approve")}
                     </button>
                     <button onClick={() => updateStatus(e.id, "rejected")} disabled={e.status === "rejected"}
                       className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                      ✕ Refuser
+                      {t("reject")}
                     </button>
                     {e.status !== "pending" && (
                       <button onClick={() => updateStatus(e.id, "pending")}
-                        className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-300"
+                        className="rounded-xl bg-slate-200 dark:bg-slate-700 px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 transition hover:bg-slate-300 dark:hover:bg-slate-600"
                       >
-                        ↩ En attente
+                        {t("setPending")}
                       </button>
                     )}
                   </div>
@@ -163,15 +160,15 @@ export default function FounderEngagementsPage() {
           {totalPages > 1 && (
             <div className="mt-6 flex items-center justify-center gap-3">
               <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}
-                className="rounded-xl bg-white px-4 py-2 font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-40"
+                className="rounded-xl bg-white dark:bg-slate-900 px-4 py-2 font-bold text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
               >
                 ← Précédent
               </button>
-              <span className="text-sm font-bold text-slate-500">
+              <span className="text-sm font-bold text-slate-500 dark:text-slate-400">
                 Page {page + 1} / {totalPages} · {filtered.length} engagements
               </span>
               <button onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}
-                className="rounded-xl bg-white px-4 py-2 font-bold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:opacity-40"
+                className="rounded-xl bg-white dark:bg-slate-900 px-4 py-2 font-bold text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
               >
                 Suivant →
               </button>

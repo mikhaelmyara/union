@@ -4,12 +4,14 @@ import { toast } from "sonner";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { useTranslations } from "next-intl";
 
 type Campaign = { id: string; title: string; is_active: boolean };
 
 const inputClass = "rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-950 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900";
 
 function LeadPageContent() {
+  const t = useTranslations("lead");
   const searchParams = useSearchParams();
   const campaignFromUrl = searchParams.get("campaign");
 
@@ -28,11 +30,8 @@ function LeadPageContent() {
         .select("id, title, is_active")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
-
       if (error) { toast.error(error.message); return; }
-
       setCampaigns(data ?? []);
-
       const exists = campaignFromUrl && data?.some((c) => c.id === campaignFromUrl);
       setCampaignId(exists ? campaignFromUrl : "");
     }
@@ -45,22 +44,21 @@ function LeadPageContent() {
 
   async function handleSubmit() {
     if (submitting) return;
-
     const cleanFullName = fullName.trim();
     const cleanEmail = email.trim();
     const cleanCountryCode = countryCode.trim();
     const cleanPhone = phone.replace(/\s/g, "");
     const fullPhone = `${cleanCountryCode}${cleanPhone}`;
 
-    if (!campaignId) { toast.error("Veuillez sélectionner une campagne."); return; }
-    if (!cleanFullName) { toast.error("Le nom complet est obligatoire."); return; }
-    if (!isValidEmail(cleanEmail)) { toast.error("Adresse email invalide."); return; }
-    if (!isValidCountryCode(cleanCountryCode)) { toast.error("Indicatif invalide. Exemple : +33, +34, +212."); return; }
-    if (!isValidPhone(cleanPhone)) { toast.error("Numéro invalide. Mets uniquement les chiffres."); return; }
+    if (!campaignId) { toast.error(t("invalidCampaign")); return; }
+    if (!cleanFullName) { toast.error(t("invalidName")); return; }
+    if (!isValidEmail(cleanEmail)) { toast.error(t("invalidEmail")); return; }
+    if (!isValidCountryCode(cleanCountryCode)) { toast.error(t("invalidCountryCode")); return; }
+    if (!isValidPhone(cleanPhone)) { toast.error(t("invalidPhone")); return; }
 
     setSubmitting(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setSubmitting(false); toast.error("Veuillez vous connecter."); window.location.href = "/login"; return; }
+    if (!user) { setSubmitting(false); toast.error("Non connecté."); window.location.href = "/login"; return; }
 
     const { error } = await supabase.from("leads").insert({
       campaign_id: campaignId,
@@ -69,11 +67,9 @@ function LeadPageContent() {
       email: cleanEmail,
       phone: fullPhone,
     });
-
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
-
-    toast.success("Engagement envoyé.");
+    toast.success(t("success"));
     setTimeout(() => { window.location.href = "/client"; }, 700);
   }
 
@@ -81,57 +77,43 @@ function LeadPageContent() {
     <main className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
       <div className="w-full max-w-xl">
         <a href="/client" className="mb-6 flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 transition hover:text-slate-950 dark:hover:text-white">
-          ← Retour au dashboard
+          {t("backToDashboard")}
         </a>
 
-        <form
-          onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
           className="rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800"
         >
-          <p className="font-bold text-indigo-600 dark:text-indigo-400">Nouvel engagement</p>
-          <h1 className="mt-2 text-3xl font-extrabold text-slate-950 dark:text-white">Ajouter un engagement</h1>
-          <p className="mt-2 text-slate-500 dark:text-slate-400">Ajoute les informations du contact à qualifier.</p>
+          <p className="font-bold text-indigo-600 dark:text-indigo-400">{t("eyebrow")}</p>
+          <h1 className="mt-2 text-3xl font-extrabold text-slate-950 dark:text-white">{t("title")}</h1>
+          <p className="mt-2 text-slate-500 dark:text-slate-400">{t("subtitle")}</p>
 
           <div className="mt-8 grid gap-4">
             <div className="grid gap-1">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Campagne</label>
-              <select
-                className={inputClass}
-                value={campaignId}
-                onChange={(e) => setCampaignId(e.target.value)}
-                required
-              >
-                <option value="">Sélectionner une campagne</option>
-                {campaigns.map((c) => (
-                  <option key={c.id} value={c.id}>{c.title}</option>
-                ))}
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t("selectCampaign")}</label>
+              <select className={inputClass} value={campaignId} onChange={(e) => setCampaignId(e.target.value)} required>
+                <option value="">{t("selectCampaign")}</option>
+                {campaigns.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
               </select>
             </div>
-
             <div className="grid gap-1">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nom complet</label>
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t("fullName")}</label>
               <input className={inputClass} placeholder="Jean Dupont" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
             </div>
-
             <div className="grid gap-1">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Email</label>
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t("email")}</label>
               <input className={inputClass} placeholder="contact@email.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-
             <div className="grid gap-1">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Téléphone</label>
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">{t("phone")}</label>
               <div className="grid grid-cols-3 gap-3">
                 <input className={inputClass} placeholder="+33" value={countryCode} onChange={(e) => setCountryCode(e.target.value)} required />
                 <input className={`col-span-2 ${inputClass}`} placeholder="612345678" inputMode="numeric" value={phone} onChange={(e) => setPhone(e.target.value)} required />
               </div>
             </div>
-
-            <button
-              type="submit"
-              disabled={submitting}
+            <button type="submit" disabled={submitting}
               className="mt-2 rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {submitting ? "Envoi..." : "Envoyer l'engagement"}
+              {submitting ? t("submitting") : t("submit")}
             </button>
           </div>
         </form>
@@ -141,9 +123,5 @@ function LeadPageContent() {
 }
 
 export default function LeadPage() {
-  return (
-    <Suspense>
-      <LeadPageContent />
-    </Suspense>
-  );
+  return <Suspense><LeadPageContent /></Suspense>;
 }

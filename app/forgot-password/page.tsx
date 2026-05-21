@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 const inputClass = "rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-950 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900";
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -14,7 +16,7 @@ export default function ForgotPasswordPage() {
   async function handleSubmit() {
     if (loading) return;
     const cleanEmail = email.trim();
-    if (!cleanEmail) { toast.error("L'email est obligatoire."); return; }
+    if (!cleanEmail) { toast.error(t("email") + " obligatoire."); return; }
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
       redirectTo: `${window.location.origin}/reset-password`,
@@ -28,7 +30,7 @@ export default function ForgotPasswordPage() {
     <main className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
       <div className="w-full max-w-md">
         <a href="/login" className="mb-8 flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white transition">
-          ← Retour à la connexion
+          ← {t("back") ?? "Retour"}
         </a>
         <div className="rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800">
           <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/40">
@@ -38,27 +40,27 @@ export default function ForgotPasswordPage() {
           </div>
           {sent ? (
             <>
-              <h1 className="text-2xl font-extrabold text-slate-950 dark:text-white">Email envoyé !</h1>
+              <h1 className="text-2xl font-extrabold text-slate-950 dark:text-white">{t("emailSent")}</h1>
               <p className="mt-3 text-slate-500 dark:text-slate-400">
-                Un lien a été envoyé à <span className="font-bold text-slate-950 dark:text-white">{email}</span>. Vérifie ta boîte mail.
+                {t("emailSentDesc").replace("{email}", email)}
               </p>
               <button onClick={() => setSent(false)} className="mt-3 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
-                Réessayer
+                {t("retry")}
               </button>
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-extrabold text-slate-950 dark:text-white">Mot de passe oublié</h1>
-              <p className="mt-2 text-slate-500 dark:text-slate-400">Saisis ton email pour recevoir un lien de réinitialisation.</p>
+              <h1 className="text-2xl font-extrabold text-slate-950 dark:text-white">{t("forgotTitle")}</h1>
+              <p className="mt-2 text-slate-500 dark:text-slate-400">{t("forgotSubtitle")}</p>
               <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="mt-6 grid gap-4">
                 <div className="grid gap-1">
-                  <label htmlFor="email" className="text-sm font-bold text-slate-700 dark:text-slate-300">Email</label>
+                  <label htmlFor="email" className="text-sm font-bold text-slate-700 dark:text-slate-300">{t("email")}</label>
                   <input id="email" type="email" autoComplete="email" placeholder="ton@email.com" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
                 </div>
                 <button type="submit" disabled={loading}
                   className="rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  {loading ? "Envoi..." : "Envoyer le lien"}
+                  {loading ? t("sending") : t("sendLink")}
                 </button>
               </form>
             </>

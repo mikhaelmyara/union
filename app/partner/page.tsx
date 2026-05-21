@@ -7,6 +7,7 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import { PageSkeleton } from "@/components/ui/Skeleton";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useTranslations } from "next-intl";
 
 type Engagement = {
   id: string;
@@ -22,6 +23,8 @@ type Engagement = {
 type Reward = { id: string; amount: number; type: "direct" | "referral" };
 
 export default function PartnerPage() {
+  const t = useTranslations("partner");
+  const tc = useTranslations("common");
   const [loading, setLoading] = useState(true);
   const [engagements, setEngagements] = useState<Engagement[]>([]);
   const [rewards, setRewards] = useState<Reward[]>([]);
@@ -70,46 +73,46 @@ export default function PartnerPage() {
   return (
     <ClientPageLayout
       active="referrals"
-      eyebrow="Partenaire"
-      title="Dashboard partenaire"
-      description="Suivez vos engagements, vos gains directs et vos commissions."
+      eyebrow={t("title")}
+      title={t("title")}
+      description={t("subtitle")}
       actions={
         <div className="flex flex-wrap gap-3">
           {isFounder && (
             <a href="/founder" className="rounded-xl bg-slate-100 dark:bg-slate-800 px-5 py-3 font-bold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-slate-700">
-              ← Dashboard fondateur
+              {t("founderDashboard")}
             </a>
           )}
           <a href="/lead" className="rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white transition hover:bg-indigo-700">
-            + Nouvel engagement
+            {t("newEngagement")}
           </a>
         </div>
       }
     >
       <div className="mb-8 rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800">
-        <p className="text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">Mon code parrain</p>
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">{t("referralCode")}</p>
         <div className="mt-3 flex flex-wrap items-center gap-4">
           <div className="rounded-xl bg-indigo-600 px-5 py-3 text-2xl font-extrabold text-white">{referralCode || "—"}</div>
           <button onClick={copyCode} className="rounded-xl bg-indigo-50 dark:bg-indigo-900/40 px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400 transition hover:bg-indigo-100">
-            {copied ? "Copié ✓" : "Copier"}
+            {copied ? tc("copied") : tc("copy")}
           </button>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Partagez ce code pour inviter d'autres utilisateurs.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{t("referralShare")}</p>
         </div>
       </div>
 
       <div className="mb-8 grid grid-cols-2 gap-4 xl:grid-cols-6">
-        <DashboardCard title="Total"       value={engagements.length} />
-        <DashboardCard title="En attente"  value={pending}                   tone="yellow" />
-        <DashboardCard title="Approuvés"   value={approved}                  tone="green" />
-        <DashboardCard title="Refusés"     value={rejected}                  tone="red" />
-        <DashboardCard title="Gains"       value={`${totalRewards} €`}       tone="indigo" />
-        <DashboardCard title="Commissions" value={`${referralRewards} €`} />
+        <DashboardCard title={t("total")}       value={engagements.length} />
+        <DashboardCard title={tc("pending")}    value={pending}                   tone="yellow" />
+        <DashboardCard title={tc("approved")}   value={approved}                  tone="green" />
+        <DashboardCard title={tc("rejected")}   value={rejected}                  tone="red" />
+        <DashboardCard title={t("gains")}       value={`${totalRewards} €`}       tone="indigo" />
+        <DashboardCard title={t("commissions")} value={`${referralRewards} €`} />
       </div>
 
       <div className="rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800">
-        <h2 className="mb-5 text-xl font-extrabold text-slate-950 dark:text-white">Mes engagements</h2>
+        <h2 className="mb-5 text-xl font-extrabold text-slate-950 dark:text-white">{t("myEngagements")}</h2>
         {engagements.length === 0 ? (
-          <EmptyState message="Aucun engagement pour le moment." />
+          <EmptyState message={t("noEngagements")} />
         ) : (
           <div className="space-y-3">
             {engagements.map((e) => (

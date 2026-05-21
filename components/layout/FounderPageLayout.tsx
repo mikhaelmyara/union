@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import MobileHeader from "@/components/mobile/MobileHeader";
 import FounderMobileBottomNav from "@/components/mobile/FounderMobileBottomNav";
 import NotificationBell from "@/components/ui/NotificationBell";
+import { useTranslations } from "next-intl";
 
 type Active = "dashboard" | "campaigns" | "engagements" | "users" | "partner" | "home";
 
@@ -16,15 +17,9 @@ type Props = {
   actions?: React.ReactNode;
 };
 
-const navItems = [
-  { href: "/founder",             label: "Dashboard",      key: "dashboard" },
-  { href: "/founder/campaigns",   label: "Campagnes",      key: "campaigns" },
-  { href: "/founder/engagements", label: "Engagements",    key: "engagements" },
-  { href: "/founder/users",       label: "Utilisateurs",   key: "users" },
-  { href: "/partner",             label: "Vue partenaire", key: "partner" },
-] as const;
-
 export default function FounderPageLayout({ active, title, description, children, actions }: Props) {
+  const t = useTranslations("nav");
+  const tc = useTranslations("common");
   const [email, setEmail] = useState("");
 
   useEffect(() => {
@@ -35,6 +30,14 @@ export default function FounderPageLayout({ active, title, description, children
     await supabase.auth.signOut();
     window.location.href = "/";
   }
+
+  const navItems = [
+    { href: "/founder",             label: t("dashboard"),   key: "dashboard" },
+    { href: "/founder/campaigns",   label: t("campaigns"),   key: "campaigns" },
+    { href: "/founder/engagements", label: t("engagements"), key: "engagements" },
+    { href: "/founder/users",       label: t("users"),       key: "users" },
+    { href: "/partner",             label: t("partner"),     key: "partner" },
+  ] as const;
 
   return (
     <>
@@ -49,7 +52,7 @@ export default function FounderPageLayout({ active, title, description, children
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white shadow-sm">U</div>
                 <div>
                   <p className="text-lg font-bold leading-5 text-slate-900 dark:text-white">UNION</p>
-                  <p className="text-sm text-slate-400 dark:text-slate-500">Portail fondateur</p>
+                  <p className="text-sm text-slate-400 dark:text-slate-500">{t("founderPortal")}</p>
                 </div>
               </a>
               <nav className="space-y-1">
@@ -76,7 +79,7 @@ export default function FounderPageLayout({ active, title, description, children
                 <NotificationBell />
               </div>
               <button onClick={handleLogout} className="text-sm font-semibold text-slate-500 dark:text-slate-400 transition hover:text-slate-900 dark:hover:text-white">
-                Déconnexion
+                {tc("logout")}
               </button>
             </div>
           </aside>
@@ -84,7 +87,7 @@ export default function FounderPageLayout({ active, title, description, children
           <section className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 md:px-8 lg:px-12 lg:py-8">
             <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="font-bold text-indigo-600 dark:text-indigo-400">Fondateur</p>
+                <p className="font-bold text-indigo-600 dark:text-indigo-400">{t("founderPortal")}</p>
                 <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-950 dark:text-white md:text-4xl">{title}</h1>
                 {description && <p className="mt-2 text-slate-500 dark:text-slate-400">{description}</p>}
               </div>

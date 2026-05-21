@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import FounderPageLayout from "@/components/layout/FounderPageLayout";
 import EmptyState from "@/components/ui/EmptyState";
 import { ListSkeleton } from "@/components/ui/Skeleton";
-import ConfirmModal from "@/components/ui/ConfirmModal";
+import { useTranslations } from "next-intl";
 
 type Profile = {
   id: string;
@@ -15,7 +15,6 @@ type Profile = {
   referral_code: string | null;
   referred_by: string | null;
   created_at: string;
-  email?: string;
 };
 
 const roleStyle: Record<string, string> = {
@@ -25,6 +24,8 @@ const roleStyle: Record<string, string> = {
 };
 
 export default function FounderUsersPage() {
+  const t = useTranslations("founder");
+  const tc = useTranslations("common");
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<Profile[]>([]);
   const [search, setSearch] = useState("");
@@ -39,15 +40,9 @@ export default function FounderUsersPage() {
   async function load() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/login"; return; }
-
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
     if (profile?.role !== "founder") { window.location.href = "/client"; return; }
-
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, full_name, role, referral_code, referred_by, created_at")
-      .order("created_at", { ascending: false });
-
+    const { data, error } = await supabase.from("profiles").select("id, full_name, role, referral_code, referred_by, created_at").order("created_at", { ascending: false });
     if (error) { toast.error(error.message); return; }
     setUsers((data as Profile[]) ?? []);
     setLoading(false);
@@ -79,44 +74,32 @@ export default function FounderUsersPage() {
   };
 
   return (
-    <FounderPageLayout
-      active="users"
-      title="Gestion des utilisateurs"
-      description="Visualise et modifie les rôles de tous les utilisateurs."
-    >
-      {/* Filtres */}
+    <FounderPageLayout active="users" title={t("usersTitle")} description={t("usersSub")}>
       <div className="mb-6 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800">
         <input
-          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-950 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900"
-          placeholder="Rechercher par nom ou code parrain..."
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-950 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500"
+          placeholder={tc("search")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <div className="mt-4 flex flex-wrap gap-2">
           {[
-            { label: `Tous (${counts.all})`,       value: "all" },
-            { label: `Clients (${counts.client})`,  value: "client" },
+            { label: `${tc("all")} (${counts.all})`, value: "all" },
+            { label: `Clients (${counts.client})`, value: "client" },
             { label: `Partenaires (${counts.partner})`, value: "partner" },
             { label: `Fondateurs (${counts.founder})`, value: "founder" },
           ].map((f) => (
             <button key={f.value} onClick={() => setRoleFilter(f.value)}
-              className={`rounded-xl px-4 py-2 text-sm font-bold transition ${
-                roleFilter === f.value ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
-              }`}
+              className={`rounded-xl px-4 py-2 text-sm font-bold transition ${roleFilter === f.value ? "bg-indigo-600 text-white" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"}`}
             >
               {f.label}
             </button>
           ))}
-          <span className="ml-auto self-center text-sm text-slate-400 dark:text-slate-500">
-            {filtered.length} utilisateur{filtered.length !== 1 ? "s" : ""}
-          </span>
+          <span className="ml-auto self-center text-sm text-slate-400 dark:text-slate-500">{filtered.length} utilisateurs</span>
         </div>
       </div>
 
-      {/* Liste */}
-      {loading ? (
-        <ListSkeleton rows={6} />
-      ) : filtered.length === 0 ? (
+      {loading ? <ListSkeleton rows={6} /> : filtered.length === 0 ? (
         <EmptyState message="Aucun utilisateur trouvé." />
       ) : (
         <div className="space-y-3">
@@ -125,12 +108,8 @@ export default function FounderUsersPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-extrabold text-slate-950 dark:text-white">
-                      {u.full_name ?? "Sans nom"}
-                    </h3>
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${roleStyle[u.role]}`}>
-                      {u.role}
-                    </span>
+                    <h3 className="font-extrabold text-slate-950 dark:text-white">{u.full_name ?? "Sans nom"}</h3>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${roleStyle[u.role]}`}>{u.role}</span>
                   </div>
                   {u.referral_code && (
                     <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -138,12 +117,10 @@ export default function FounderUsersPage() {
                     </p>
                   )}
                   <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
-                    Inscrit le {new Date(u.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
+                    {new Date(u.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
                 </div>
-
-                <button
-                  onClick={() => { setEditUser(u); setNewRole(u.role); setConfirmOpen(true); }}
+                <button onClick={() => { setEditUser(u); setNewRole(u.role); setConfirmOpen(true); }}
                   className="rounded-xl bg-slate-100 dark:bg-slate-800 px-4 py-2 text-sm font-bold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                   Modifier le rôle
@@ -154,46 +131,32 @@ export default function FounderUsersPage() {
         </div>
       )}
 
-      {/* Modal modification rôle */}
-      {editUser && (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm ${confirmOpen ? "" : "hidden"}`}>
+      {editUser && confirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-2xl ring-1 ring-slate-200 dark:ring-slate-800">
-            <h2 className="text-xl font-extrabold text-slate-950 dark:text-white">
-              Modifier le rôle
-            </h2>
+            <h2 className="text-xl font-extrabold text-slate-950 dark:text-white">Modifier le rôle</h2>
             <p className="mt-1 text-slate-500 dark:text-slate-400">
               {editUser.full_name ?? "Cet utilisateur"} — rôle actuel : <span className="font-bold">{editUser.role}</span>
             </p>
-
             <div className="mt-5 grid gap-2">
               {(["client", "partner", "founder"] as const).map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setNewRole(r)}
-                  className={`rounded-xl px-4 py-3 text-left font-bold transition ${
-                    newRole === r
-                      ? "bg-indigo-600 text-white"
-                      : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  }`}
+                <button key={r} onClick={() => setNewRole(r)}
+                  className={`rounded-xl px-4 py-3 text-left font-bold transition ${newRole === r ? "bg-indigo-600 text-white" : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"}`}
                 >
                   {r === "client" ? "Client" : r === "partner" ? "Partenaire" : "Fondateur"}
                 </button>
               ))}
             </div>
-
             <div className="mt-6 flex gap-3">
-              <button
-                onClick={updateRole}
-                disabled={saving || newRole === editUser.role}
+              <button onClick={updateRole} disabled={saving || newRole === editUser.role}
                 className="rounded-xl bg-indigo-600 px-5 py-2.5 font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {saving ? "Sauvegarde..." : "Confirmer"}
+                {saving ? tc("saving") : tc("confirm")}
               </button>
-              <button
-                onClick={() => { setEditUser(null); setConfirmOpen(false); }}
+              <button onClick={() => { setEditUser(null); setConfirmOpen(false); }}
                 className="rounded-xl bg-slate-100 dark:bg-slate-800 px-5 py-2.5 font-bold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-slate-700"
               >
-                Annuler
+                {tc("cancel")}
               </button>
             </div>
           </div>

@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 
 const inputClass = "rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-950 dark:text-white placeholder:text-slate-400 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900";
 
 export default function ResetPasswordPage() {
+  const t = useTranslations("auth");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,14 +24,14 @@ export default function ResetPasswordPage() {
 
   async function handleReset() {
     if (loading) return;
-    if (password.length < 6) { toast.error("Minimum 6 caractères."); return; }
+    if (password.length < 6) { toast.error(t("passwordMin")); return; }
     if (password !== confirm) { toast.error("Les mots de passe ne correspondent pas."); return; }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
     setDone(true);
-    toast.success("Mot de passe mis à jour !");
+    toast.success(t("passwordUpdated"));
     setTimeout(() => { window.location.href = "/login"; }, 2000);
   }
 
@@ -39,37 +41,37 @@ export default function ResetPasswordPage() {
         {done ? (
           <>
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-green-50 dark:bg-green-900/40 text-2xl">✓</div>
-            <h1 className="text-2xl font-extrabold text-slate-950 dark:text-white">Mot de passe mis à jour !</h1>
-            <p className="mt-3 text-slate-500 dark:text-slate-400">Redirection vers la connexion...</p>
+            <h1 className="text-2xl font-extrabold text-slate-950 dark:text-white">{t("passwordUpdated")}</h1>
+            <p className="mt-3 text-slate-500 dark:text-slate-400">{t("redirecting")}</p>
           </>
         ) : !ready ? (
           <>
             <div className="mb-4 text-2xl">⚠️</div>
-            <h1 className="text-2xl font-extrabold text-slate-950 dark:text-white">Lien invalide</h1>
-            <p className="mt-3 text-slate-500 dark:text-slate-400">Ce lien est expiré. Demande un nouveau lien.</p>
+            <h1 className="text-2xl font-extrabold text-slate-950 dark:text-white">{t("invalidLink")}</h1>
+            <p className="mt-3 text-slate-500 dark:text-slate-400">{t("invalidLinkDesc")}</p>
             <a href="/forgot-password" className="mt-6 inline-block rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white transition hover:bg-indigo-700">
-              Nouveau lien
+              {t("newLink")}
             </a>
           </>
         ) : (
           <>
-            <h1 className="mb-2 text-2xl font-extrabold text-slate-950 dark:text-white">Nouveau mot de passe</h1>
-            <p className="text-slate-500 dark:text-slate-400">Choisis un nouveau mot de passe.</p>
+            <h1 className="mb-2 text-2xl font-extrabold text-slate-950 dark:text-white">{t("resetTitle")}</h1>
+            <p className="text-slate-500 dark:text-slate-400">{t("resetSubtitle")}</p>
             <form onSubmit={(e) => { e.preventDefault(); handleReset(); }} className="mt-6 grid gap-4">
               <div className="grid gap-1">
                 <label htmlFor="password" className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                  Nouveau mot de passe <span className="font-normal text-slate-400">(min. 6 caractères)</span>
+                  {t("password")} <span className="font-normal text-slate-400">{t("passwordMin")}</span>
                 </label>
                 <input id="password" type="password" autoComplete="new-password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} />
               </div>
               <div className="grid gap-1">
-                <label htmlFor="confirm" className="text-sm font-bold text-slate-700 dark:text-slate-300">Confirmer</label>
+                <label htmlFor="confirm" className="text-sm font-bold text-slate-700 dark:text-slate-300">{t("confirmPassword")}</label>
                 <input id="confirm" type="password" autoComplete="new-password" placeholder="••••••••" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={inputClass} />
               </div>
               <button type="submit" disabled={loading}
                 className="rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white transition hover:bg-indigo-700 disabled:opacity-50"
               >
-                {loading ? "Mise à jour..." : "Mettre à jour"}
+                {loading ? t("updating") : t("updatePassword")}
               </button>
             </form>
           </>
