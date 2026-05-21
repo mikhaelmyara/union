@@ -1,16 +1,13 @@
 "use client";
 
 import { toast } from "sonner";
-import PageActions from "@/components/PageActions";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-type Campaign = {
-  id: string;
-  title: string;
-  is_active: boolean;
-};
+type Campaign = { id: string; title: string; is_active: boolean };
+
+const inputClass = "rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-950 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900";
 
 function LeadPageContent() {
   const searchParams = useSearchParams();
@@ -18,13 +15,10 @@ function LeadPageContent() {
 
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [campaignId, setCampaignId] = useState("");
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-
   const [countryCode, setCountryCode] = useState("+33");
   const [phone, setPhone] = useState("");
-
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -35,38 +29,19 @@ function LeadPageContent() {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
 
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
+      if (error) { toast.error(error.message); return; }
 
       setCampaigns(data ?? []);
 
-      const campaignExistsInList =
-        campaignFromUrl &&
-        data?.some((campaign) => campaign.id === campaignFromUrl);
-
-      if (campaignExistsInList) {
-        setCampaignId(campaignFromUrl);
-      } else {
-        setCampaignId("");
-      }
+      const exists = campaignFromUrl && data?.some((c) => c.id === campaignFromUrl);
+      setCampaignId(exists ? campaignFromUrl : "");
     }
-
     loadCampaigns();
   }, [campaignFromUrl]);
 
-  function isValidEmail(value: string) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-  }
-
-  function isValidCountryCode(value: string) {
-    return /^\+\d{1,4}$/.test(value);
-  }
-
-  function isValidPhone(value: string) {
-    return /^\d{6,14}$/.test(value);
-  }
+  function isValidEmail(v: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+  function isValidCountryCode(v: string) { return /^\+\d{1,4}$/.test(v); }
+  function isValidPhone(v: string) { return /^\d{6,14}$/.test(v); }
 
   async function handleSubmit() {
     if (submitting) return;
@@ -77,44 +52,15 @@ function LeadPageContent() {
     const cleanPhone = phone.replace(/\s/g, "");
     const fullPhone = `${cleanCountryCode}${cleanPhone}`;
 
-    if (!campaignId) {
-      toast.error("Veuillez sélectionner une campagne.");
-      return;
-    }
-
-    if (!cleanFullName) {
-      toast.error("Le nom complet est obligatoire.");
-      return;
-    }
-
-    if (!isValidEmail(cleanEmail)) {
-      toast.error("Adresse email invalide.");
-      return;
-    }
-
-    if (!isValidCountryCode(cleanCountryCode)) {
-      toast.error("Indicatif invalide. Exemple : +33, +34, +212.");
-      return;
-    }
-
-    if (!isValidPhone(cleanPhone)) {
-      toast.error("Numéro invalide. Mets uniquement les chiffres.");
-      return;
-    }
+    if (!campaignId) { toast.error("Veuillez sélectionner une campagne."); return; }
+    if (!cleanFullName) { toast.error("Le nom complet est obligatoire."); return; }
+    if (!isValidEmail(cleanEmail)) { toast.error("Adresse email invalide."); return; }
+    if (!isValidCountryCode(cleanCountryCode)) { toast.error("Indicatif invalide. Exemple : +33, +34, +212."); return; }
+    if (!isValidPhone(cleanPhone)) { toast.error("Numéro invalide. Mets uniquement les chiffres."); return; }
 
     setSubmitting(true);
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      setSubmitting(false);
-      toast.error("Veuillez vous connecter.");
-      window.location.href = "/login";
-      return;
-    }
-
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setSubmitting(false); toast.error("Veuillez vous connecter."); window.location.href = "/login"; return; }
 
     const { error } = await supabase.from("leads").insert({
       campaign_id: campaignId,
@@ -125,101 +71,67 @@ function LeadPageContent() {
     });
 
     setSubmitting(false);
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
+    if (error) { toast.error(error.message); return; }
 
     toast.success("Engagement envoyé.");
-
-    setTimeout(() => {
-      window.location.href = "/client";
-    }, 700);
+    setTimeout(() => { window.location.href = "/client"; }, 700);
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#F7F8FC] p-4">
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 p-4">
       <div className="w-full max-w-xl">
-        <div className="mb-6 flex justify-end">
-          <PageActions backHref="/client" />
-        </div>
+        <a href="/client" className="mb-6 flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 transition hover:text-slate-950 dark:hover:text-white">
+          ← Retour au dashboard
+        </a>
 
         <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit();
-          }}
-          className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-100"
+          onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}
+          className="rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800"
         >
-          <p className="font-bold text-indigo-600">Nouvel engagement</p>
-
-          <h1 className="mt-2 text-3xl font-extrabold">
-            Ajouter un engagement
-          </h1>
-
-          <p className="mt-2 text-slate-500">
-            Ajoute les informations du contact à qualifier.
-          </p>
+          <p className="font-bold text-indigo-600 dark:text-indigo-400">Nouvel engagement</p>
+          <h1 className="mt-2 text-3xl font-extrabold text-slate-950 dark:text-white">Ajouter un engagement</h1>
+          <p className="mt-2 text-slate-500 dark:text-slate-400">Ajoute les informations du contact à qualifier.</p>
 
           <div className="mt-8 grid gap-4">
-            <select
-              className="rounded-xl border p-3"
-              value={campaignId}
-              onChange={(e) => setCampaignId(e.target.value)}
-              required
-            >
-              <option value="">Sélectionner une campagne</option>
-
-              {campaigns.map((campaign) => (
-                <option key={campaign.id} value={campaign.id}>
-                  {campaign.title}
-                </option>
-              ))}
-            </select>
-
-            <input
-              className="rounded-xl border p-3"
-              placeholder="Nom complet"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-
-            <input
-              className="rounded-xl border p-3"
-              placeholder="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-
-            <div className="grid grid-cols-3 gap-3">
-              <input
-                className="rounded-xl border p-3"
-                placeholder="+33"
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
+            <div className="grid gap-1">
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Campagne</label>
+              <select
+                className={inputClass}
+                value={campaignId}
+                onChange={(e) => setCampaignId(e.target.value)}
                 required
-              />
+              >
+                <option value="">Sélectionner une campagne</option>
+                {campaigns.map((c) => (
+                  <option key={c.id} value={c.id}>{c.title}</option>
+                ))}
+              </select>
+            </div>
 
-              <input
-                className="col-span-2 rounded-xl border p-3"
-                placeholder="612345678"
-                inputMode="numeric"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-              />
+            <div className="grid gap-1">
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nom complet</label>
+              <input className={inputClass} placeholder="Jean Dupont" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+            </div>
+
+            <div className="grid gap-1">
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Email</label>
+              <input className={inputClass} placeholder="contact@email.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </div>
+
+            <div className="grid gap-1">
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Téléphone</label>
+              <div className="grid grid-cols-3 gap-3">
+                <input className={inputClass} placeholder="+33" value={countryCode} onChange={(e) => setCountryCode(e.target.value)} required />
+                <input className={`col-span-2 ${inputClass}`} placeholder="612345678" inputMode="numeric" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-2 rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {submitting ? "Envoi..." : "Envoyer l’engagement"}
+              {submitting ? "Envoi..." : "Envoyer l'engagement"}
             </button>
           </div>
         </form>
