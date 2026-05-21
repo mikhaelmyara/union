@@ -163,7 +163,7 @@ export default function ClientPage() {
 
             {/* Challenge actif */}
             {activeChallenge && (
-              <div className="mb-8 overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 p-5 text-white shadow-xl shadow-indigo-200 md:p-6">
+              <div className="mb-8 overflow-hidden rounded-2xl bg-linear-to-r from-indigo-600 to-violet-600 p-5 text-white shadow-xl shadow-indigo-200 md:p-6">
                 <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
                   <div>
                     <p className="text-sm font-bold uppercase tracking-wide text-indigo-100">Challenge actif</p>

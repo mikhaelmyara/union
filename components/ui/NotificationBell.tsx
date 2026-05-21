@@ -10,7 +10,7 @@ export default function NotificationBell() {
     loadUnread();
 
     const channel = supabase
-      .channel("notif-bell")
+      .channel(`notif-bell-${Math.random()}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications" },
