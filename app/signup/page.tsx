@@ -7,13 +7,10 @@ import { supabase } from "@/lib/supabase";
 export default function SignupPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [birthDate, setBirthDate] = useState("");
   const [referralCode, setReferralCode] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   async function handleSignup() {
@@ -24,25 +21,10 @@ export default function SignupPage() {
     const cleanEmail = email.trim();
     const cleanReferralCode = referralCode.trim().toUpperCase();
 
-    if (!cleanFirstName) {
-      toast.error("Le prénom est obligatoire.");
-      return;
-    }
-
-    if (!cleanLastName) {
-      toast.error("Le nom est obligatoire.");
-      return;
-    }
-
-    if (!birthDate) {
-      toast.error("La date de naissance est obligatoire.");
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error("Le mot de passe doit contenir au moins 6 caractères.");
-      return;
-    }
+    if (!cleanFirstName) { toast.error("Le prénom est obligatoire."); return; }
+    if (!cleanLastName) { toast.error("Le nom est obligatoire."); return; }
+    if (!birthDate) { toast.error("La date de naissance est obligatoire."); return; }
+    if (password.length < 6) { toast.error("Le mot de passe doit contenir au moins 6 caractères."); return; }
 
     if (cleanReferralCode !== "") {
       const { data: existingProfile, error: referralError } = await supabase
@@ -51,15 +33,8 @@ export default function SignupPage() {
         .eq("referral_code", cleanReferralCode)
         .maybeSingle();
 
-      if (referralError) {
-        toast.error(referralError.message);
-        return;
-      }
-
-      if (!existingProfile) {
-        toast.error("Code parrain invalide.");
-        return;
-      }
+      if (referralError) { toast.error(referralError.message); return; }
+      if (!existingProfile) { toast.error("Code parrain invalide."); return; }
     }
 
     setLoading(true);
@@ -79,101 +54,73 @@ export default function SignupPage() {
 
     setLoading(false);
 
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
+    if (error) { toast.error(error.message); return; }
 
-    toast.success("Compte créé.");
-
-    setTimeout(() => {
-      window.location.href = "/login";
-    }, 700);
+    toast.success("Compte créé ! Connecte-toi maintenant.");
+    setTimeout(() => { window.location.href = "/login"; }, 700);
   }
+
+  const inputClass = "rounded-xl border border-slate-200 p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100";
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#F7F8FC] p-4">
       <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSignup();
-        }}
+        onSubmit={(e) => { e.preventDefault(); handleSignup(); }}
         className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-100"
       >
         <h1 className="text-3xl font-extrabold">Créer un compte</h1>
-
-        <p className="mt-2 text-slate-500">
-          Rejoins UNION en quelques secondes.
-        </p>
+        <p className="mt-2 text-slate-500">Rejoins UNION en quelques secondes.</p>
 
         <div className="mt-8 grid gap-4">
           <div className="grid grid-cols-2 gap-3">
-            <input
-              className="rounded-xl border p-3"
-              placeholder="Prénom"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-            />
-
-            <input
-              className="rounded-xl border p-3"
-              placeholder="Nom"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-            />
+            <div className="grid gap-1">
+              <label htmlFor="firstName" className="text-sm font-bold text-slate-700">Prénom</label>
+              <input id="firstName" className={inputClass} placeholder="Jean" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+            </div>
+            <div className="grid gap-1">
+              <label htmlFor="lastName" className="text-sm font-bold text-slate-700">Nom</label>
+              <input id="lastName" className={inputClass} placeholder="Dupont" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+            </div>
           </div>
 
-          <input
-            className="rounded-xl border p-3"
-            placeholder="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <div className="grid gap-1">
+            <label htmlFor="email" className="text-sm font-bold text-slate-700">Email</label>
+            <input id="email" className={inputClass} placeholder="ton@email.com" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </div>
 
-          <input
-            className="rounded-xl border p-3"
-            placeholder="Mot de passe"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="grid gap-1">
+            <label htmlFor="password" className="text-sm font-bold text-slate-700">Mot de passe <span className="font-normal text-slate-400">(min. 6 caractères)</span></label>
+            <input id="password" className={inputClass} placeholder="••••••••" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-bold text-slate-500">
-              Date de naissance
+          <div className="grid gap-1">
+            <label htmlFor="birthDate" className="text-sm font-bold text-slate-700">Date de naissance</label>
+            <input id="birthDate" className={`w-full ${inputClass}`} type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required />
+          </div>
+
+          <div className="grid gap-1">
+            <label htmlFor="referralCode" className="text-sm font-bold text-slate-700">
+              Code parrain <span className="font-normal text-slate-400">(optionnel)</span>
             </label>
-
             <input
-              className="w-full rounded-xl border p-3"
-              type="date"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-              required
+              id="referralCode"
+              className={inputClass}
+              placeholder="ABC123"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
             />
           </div>
-
-          <input
-            className="rounded-xl border p-3"
-            placeholder="Code parrain optionnel"
-            value={referralCode}
-            onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-          />
 
           <button
             type="submit"
             disabled={loading}
-            className="rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? "Création..." : "S’inscrire"}
+            {loading ? "Création..." : "S'inscrire"}
           </button>
 
-          <a href="/login" className="text-center font-bold text-indigo-600">
-            Déjà un compte ? Connexion
+          <a href="/login" className="text-center font-bold text-indigo-600 hover:underline">
+            Déjà un compte ? Se connecter
           </a>
         </div>
       </form>

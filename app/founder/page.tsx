@@ -50,8 +50,36 @@ export default function FounderPage() {
   const [challengeEndDate, setChallengeEndDate] = useState("");
 
   useEffect(() => {
-    loadDashboard();
-  }, []);
+  loadDashboard();
+
+  const channel = supabase
+    .channel("founder-live")
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "leads" },
+      () => loadDashboard()
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "rewards" },
+      () => loadDashboard()
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "campaigns" },
+      () => loadDashboard()
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "challenges" },
+      () => loadDashboard()
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
 
   async function loadDashboard() {
     const {

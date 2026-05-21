@@ -1,33 +1,15 @@
 "use client";
 
-import MobileHeader from "@/components/mobile/MobileHeader";
-import MobileBottomNav from "@/components/mobile/MobileBottomNav";
-import DashboardNav from "@/components/layout/DashboardNav";
-import PageShell from "@/components/layout/PageShell";
+import ClientPageLayout from "@/components/layout/ClientPageLayout";
 import EmptyState from "@/components/ui/EmptyState";
-import StatCard from "@/components/ui/StatCard";
+import { StatsSkeleton, ListSkeleton } from "@/components/ui/Skeleton";
+import DashboardCard from "@/components/ui/DashboardCard";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-type ReferralUser = {
-  id: string;
-  full_name: string | null;
-  referral_code: string | null;
-  created_at: string;
-};
-
-type ReferralReward = {
-  id: string;
-  user_id: string;
-  amount: number;
-  type: "direct" | "referral";
-};
-
-type Engagement = {
-  id: string;
-  client_id: string;
-  status: "pending" | "approved" | "rejected";
-};
+type ReferralUser = { id: string; full_name: string | null; referral_code: string | null; created_at: string };
+type ReferralReward = { id: string; amount: number; type: "direct" | "referral" };
+type Engagement = { id: string; client_id: string; status: "pending" | "approved" | "rejected" };
 
 export default function ReferralsPage() {
   const [loading, setLoading] = useState(true);
@@ -36,142 +18,95 @@ export default function ReferralsPage() {
   const [engagements, setEngagements] = useState<Engagement[]>([]);
 
   useEffect(() => {
-    loadReferrals();
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { window.location.href = "/login"; return; }
+
+      const { data: referralsData } = await supabase
+        .from("profiles")
+        .select("id, full_name, referral_code, created_at")
+        .eq("referred_by", user.id)
+        .order("created_at", { ascending: false });
+
+      const referralIds = referralsData?.map((r) => r.id) ?? [];
+
+      const [rewardsRes, engagementsRes] = await Promise.all([
+        supabase.from("rewards").select("id, amount, type").eq("user_id", user.id).eq("type", "referral"),
+        referralIds.length > 0
+          ? supabase.from("leads").select("id, client_id, status").in("client_id", referralIds)
+          : Promise.resolve({ data: [] }),
+      ]);
+
+      setReferrals((referralsData as ReferralUser[]) ?? []);
+      setRewards((rewardsRes.data as ReferralReward[]) ?? []);
+      setEngagements(((engagementsRes as { data: Engagement[] | null }).data as Engagement[]) ?? []);
+      setLoading(false);
+    }
+    load();
   }, []);
 
-  async function loadReferrals() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      window.location.href = "/login";
-      return;
-    }
-
-    const { data: referralsData } = await supabase
-      .from("profiles")
-      .select("id, full_name, referral_code, created_at")
-      .eq("referred_by", user.id)
-      .order("created_at", { ascending: false });
-
-    const referralIds = referralsData?.map((referral) => referral.id) ?? [];
-
-    const { data: rewardsData } = await supabase
-      .from("rewards")
-      .select("id, user_id, amount, type")
-      .eq("user_id", user.id)
-      .eq("type", "referral");
-
-    let engagementsData: Engagement[] = [];
-
-    if (referralIds.length > 0) {
-      const { data } = await supabase
-        .from("leads")
-        .select("id, client_id, status")
-        .in("client_id", referralIds);
-
-      engagementsData = (data as Engagement[]) ?? [];
-    }
-
-    setReferrals((referralsData as ReferralUser[]) ?? []);
-    setRewards((rewardsData as ReferralReward[]) ?? []);
-    setEngagements(engagementsData);
-    setLoading(false);
-  }
-
-  const totalReferralRewards = rewards.reduce(
-    (sum, reward) => sum + reward.amount,
-    0
-  );
-
-  const approvedEngagements = engagements.filter(
-    (engagement) => engagement.status === "approved"
-  ).length;
-
-  if (loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F7F8FC]">
-        Chargement...
-      </main>
-    );
-  }
+  const totalCommissions = rewards.reduce((s, r) => s + r.amount, 0);
+  const approvedCount = engagements.filter((e) => e.status === "approved").length;
 
   return (
-  <>
-    <MobileHeader
-      title="Mes parrainages"
-      subtitle="UNION"
-    />
-    <PageShell
+    <ClientPageLayout
+      active="referrals"
       eyebrow="Parrainages"
       title="Mes parrainages"
       description="Suis les utilisateurs inscrits grâce à ton code et les commissions générées."
-      backHref="/client"
     >
-      <DashboardNav active="referrals" />
+      {loading ? (
+        <>
+          <StatsSkeleton count={3} />
+          <ListSkeleton rows={3} />
+        </>
+      ) : (
+        <>
+          <div className="mb-8 grid gap-4 sm:grid-cols-3">
+            <DashboardCard title="Utilisateurs parrainés" value={referrals.length} />
+            <DashboardCard title="Engagements confirmés" value={approvedCount} tone="green" />
+            <DashboardCard title="Commissions gagnées" value={`${totalCommissions} €`} tone="indigo" />
+          </div>
 
-      <div className="mb-10 grid gap-5 md:grid-cols-3">
-        <StatCard label="Utilisateurs parrainés" value={referrals.length} />
-        <StatCard label="Engagements confirmés" value={approvedEngagements} tone="green" />
-        <StatCard label="Commissions gagnées" value={`${totalReferralRewards} €`} tone="indigo" />
-      </div>
-
-      <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
-        <h2 className="text-2xl font-extrabold text-slate-950">
-          Utilisateurs parrainés
-        </h2>
-
-        <div className="mt-6 space-y-4">
-          {referrals.length === 0 ? (
-            <EmptyState message="Aucun utilisateur parrainé pour le moment." />
-          ) : (
-            referrals.map((referral) => {
-              const confirmedCount = engagements.filter(
-                (engagement) =>
-                  engagement.client_id === referral.id &&
-                  engagement.status === "approved"
-              ).length;
-
-              return (
-                <div
-                  key={referral.id}
-                  className="rounded-2xl border border-slate-100 p-5"
-                >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <h3 className="text-xl font-extrabold text-slate-950">
-                        {referral.full_name ?? "Utilisateur"}
-                      </h3>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        Code : {referral.referral_code ?? "—"}
-                      </p>
-
-                      <p className="mt-1 text-sm text-slate-400">
-                        Inscrit le {new Date(referral.created_at).toLocaleDateString()}
-                      </p>
+          <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+            <h2 className="mb-5 text-xl font-extrabold text-slate-950">Utilisateurs parrainés</h2>
+            {referrals.length === 0 ? (
+              <EmptyState message="Aucun utilisateur parrainé pour le moment." />
+            ) : (
+              <div className="space-y-4">
+                {referrals.map((r) => {
+                  const confirmed = engagements.filter((e) => e.client_id === r.id && e.status === "approved").length;
+                  const pending = engagements.filter((e) => e.client_id === r.id && e.status === "pending").length;
+                  return (
+                    <div key={r.id} className="rounded-2xl border border-slate-100 p-5 transition hover:border-indigo-200">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <h3 className="font-extrabold text-slate-950">{r.full_name ?? "Utilisateur"}</h3>
+                          <p className="mt-0.5 text-sm text-slate-400">
+                            Inscrit le {new Date(r.created_at).toLocaleDateString("fr-FR")}
+                          </p>
+                        </div>
+                        <div className="flex gap-3">
+                          {pending > 0 && (
+                            <div className="rounded-xl bg-yellow-50 px-3 py-2 text-center">
+                              <p className="text-lg font-extrabold text-yellow-700">{pending}</p>
+                              <p className="text-xs text-yellow-700">En attente</p>
+                            </div>
+                          )}
+                          <div className="rounded-xl bg-green-50 px-3 py-2 text-center">
+                            <p className="text-lg font-extrabold text-green-700">{confirmed}</p>
+                            <p className="text-xs text-green-700">Confirmés</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-
-                    <div className="rounded-xl bg-green-50 px-4 py-3">
-                      <p className="text-xl font-extrabold text-green-700">
-                        {confirmedCount}
-                      </p>
-                      <p className="text-sm text-green-700">Confirmés</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </div>
-    </PageShell>
-
-    <MobileBottomNav active="referrals" />
-
-  </>
-
-);
-
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </ClientPageLayout>
+  );
 }
